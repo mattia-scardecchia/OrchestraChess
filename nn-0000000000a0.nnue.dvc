@@ -1,0 +1,5 @@
+outs:
+- md5: 2f6d6736d81bb6decc4b4c30800b33c6
+  size: 64489524
+  hash: md5
+  path: nn-0000000000a0.nnue

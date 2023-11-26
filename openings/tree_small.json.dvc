@@ -1,0 +1,5 @@
+outs:
+- md5: 35b97720e2160ca81708a8188ecdc9ea
+  size: 96824468
+  hash: md5
+  path: tree_small.json

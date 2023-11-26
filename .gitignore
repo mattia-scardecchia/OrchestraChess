@@ -1,0 +1,9 @@
+/target
+**/*.json
+
+**/*.uci
+**/*.pgn
+
+.DS_Store
+.vscode
+/nn-0000000000a0.nnue
