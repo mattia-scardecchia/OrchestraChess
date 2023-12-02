@@ -2,6 +2,30 @@
 
 Orchestra Chess is a chess engine written from scratch in Rust, that reached 2300+ Elo rating on Lichess in blitz (98th percentile of weekly active human players). It was developed by Mattia Scardecchia and Dario Filatrella as a project for a Software Engineering course at Bocconi University, in Fall 2023.
 
+## Usage
+
+To install and build the project, fire up a terminal and run:
+```
+git clone https://github.com/MattiaSC01/ChessBot.git
+cd ChessBot
+dvc pull
+cargo build --release
+```
+Now, you can run the engine with:
+```
+cd ChessBot
+./target/release/rust-chess-bot
+```
+This will fire up the engine, and you will be able to communicate with it through the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html). For instance, you can have it analyze a position by passing it a fen, like this:
+```
+position fen <your_favorite_fen>
+go depth <depth>
+```
+You can also specify a maximum time in milliseconds to spend on the analysis, instead of a max depth, by using:
+```
+go time <time_in_millis>
+```
+
 ## Engine
 
 Here we describe the main components of the engine. Code can be found in the `src` directory.
@@ -29,11 +53,11 @@ This requires being able to efficiently hash the board state. We employ a 64-bit
 ### Opening Book
 
 To save time during the opening phase, we downloaded a database of 44M games from Lichess, filtered them based on players' ratings and time control, and built a tree rooted in the starting position in which a node's children are all the positions that have been reached after that node in the filtered database. The end result is a 213Mb tree that can be efficiently queried for the most played continuation up to move 15 (although move quality obviously deteriorates with depth). For simplicity, we ignored transpositions here.
-The python scripts used to create the opening book can be found in the `opening_book_processing` directory.
+The python scripts used to create the opening book can be found in the `opening_book_processing` directory. To activate the opening book, set USE_BOOK to true in the `src/book.rs` file.
 
 ## UCI Protocol
 
-We implemented the common UCI protocol to be able to communicate with existing GUIs and with Lichess. Time management is achieved spawning a separate thread that updates a mutex when it thinks it's time to stop the search. The decison is made based on the remaining time and the duration of the search at the previous depth of the iterative deepening scheme.
+We implemented the common UCI protocol to be able to communicate with existing GUIs and with Lichess. During a game, time management is achieved spawning a separate thread that updates a mutex when it thinks it's time to stop the search. The decison is made based on the remaining time and the duration of the search at the previous depth of the iterative deepening scheme.
 
 ## Sources
 
