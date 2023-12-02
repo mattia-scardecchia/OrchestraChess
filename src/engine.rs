@@ -9,7 +9,7 @@ use std::cmp::{max, min};
 
 pub const MATING_SCORE: i32 = 250000;
 const BOOK_DEPTH: u64 = 20;
-const BOOK_FILE: &str = "tree.json";
+const BOOK_FILE: &str = "openings/tree.json";
 const TIME_ELAPSED_ITERATIVE_DEEPENING: f32 = 0.5;
 
 pub struct Engine {
