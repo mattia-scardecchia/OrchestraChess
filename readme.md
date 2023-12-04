@@ -11,17 +11,20 @@ cd ChessBot
 dvc pull
 cargo build --release
 ```
-Now, you can run the engine with:
+Now, from the project directory, you can run the engine with:
 ```
-cd ChessBot
 ./target/release/rust-chess-bot
 ```
-This will fire up the engine, and you will be able to communicate with it through the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html). For instance, you can have it analyze a position by passing it a fen, like this:
+You will be able to communicate with the engine through the terminal, using the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html). For instance, you can have it analyze a position by passing it a fen, like this:
 ```
 position fen <your_favorite_fen>
 go depth <depth>
 ```
-You can also specify a maximum time in milliseconds to spend on the analysis, instead of a max depth, by using:
+You can also pass a position by specifying the sequence of moves since the beginning of the game, specifying starting and ending square. For example:
+```
+position startpos moves e2e4 e7e5 f2f4
+```
+Finally, instead of asking an analysis to a given depth, like above, you can specify the amount of time that should be spent, in milliseconds:
 ```
 go movetime <time_in_millis>
 ```
