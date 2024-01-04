@@ -4,7 +4,7 @@ use crate::nnue::architecture::Architecture;
 use crate::nnue::feature_transformer::FeatureTransformer;
 use crate::nnue::read_utilities::read_u32;
 
-const FILE_NAME: &str = "nn-0000000000a0.nnue";
+const FILE_NAME: &str = "nnue_weights/nn-0000000000a0.nnue";
 const LAYER_STACKS: usize = 8;
 
 
