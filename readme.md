@@ -1,7 +1,7 @@
 # Orchestra Chess
 
-Orchestra Chess is a chess engine written from scratch in Rust, that reached 2300+ Elo rating on Lichess in blitz (98th percentile of weekly active human players). It was developed by Mattia Scardecchia and Dario Filatrella as a project for a Software Engineering course at Bocconi University, in Fall 2023.
-Lichess account: [here](https://lichess.org/@/OrchestraBot)
+Orchestra Chess is a chess engine written from scratch in Rust, that reached 2300+ Elo rating on Lichess in blitz (98th percentile of weekly active human players). It was developed by Mattia Scardecchia and Dario Filatrella as a project for a Software Engineering course at Bocconi University, in Fall 2023. \
+Lichess account: [here](https://lichess.org/@/OrchestraBot) \
 Development repo: [here](https://github.com/DarioFi/OrchestraChess)
 
 ## Usage
@@ -15,7 +15,7 @@ cargo build --release
 ```
 Now, from the project directory, you can run the engine with:
 ```
-./target/release/rust-chess-bot
+cargo run --release
 ```
 You will be able to communicate with the engine through the terminal, using the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html). For instance, you can have it analyze a position by passing it a fen, like this:
 ```
