@@ -131,7 +131,7 @@ pub struct FeatureTransformer {
     pub opp_acc_stack: Vec<[BiasType; TRANSFORMED_FEATURE_DIMENSIONS]>,
     pub my_psq_acc_stack: Vec<[PSQTWeightType; PSQT_BUCKETS]>,
     pub opp_psq_acc_stack: Vec<[PSQTWeightType; PSQT_BUCKETS]>,
-    indices: [usize; CACHE_MAKE_INDEX_SIZE],
+    indices: Vec<usize>,
 }
 
 
@@ -182,7 +182,7 @@ impl FeatureTransformer {
             opp_acc_stack: vec![],
             my_psq_acc_stack: vec![],
             opp_psq_acc_stack: vec![],
-            indices: [0_usize; CACHE_MAKE_INDEX_SIZE],
+            indices: vec![0_usize; CACHE_MAKE_INDEX_SIZE],
         };
         x.create_indices_for_make();
         x
@@ -197,7 +197,7 @@ impl FeatureTransformer {
             opp_acc_stack: vec![],
             my_psq_acc_stack: vec![],
             opp_psq_acc_stack: vec![],
-            indices: [0_usize; CACHE_MAKE_INDEX_SIZE],
+            indices: vec![0_usize; CACHE_MAKE_INDEX_SIZE],
         }
     }
 
