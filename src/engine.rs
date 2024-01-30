@@ -17,19 +17,26 @@ pub struct Engine {
     node_count: u64,
     max_selective: i32,
     transposition_table: HashMap<u64, (u64, i32, Move, bool)>,
-    pub book: OpeningBook,
+    pub book: Option<OpeningBook>,
     pub position_loaded: String,
     pub moves_loaded: String,
     curr_max_depth: i32,
 }
 
-pub fn new_engine(board: Board) -> Engine {
+pub fn new_engine(board: Board, use_book: bool) -> Engine {
+    let opening_book;
+    if use_book {
+        opening_book = Some(OpeningBook::new(BOOK_FILE));
+    } else {
+        opening_book = None;
+    }
+
     Engine {
         board,
         node_count: 0,
         max_selective: 0,
         transposition_table: HashMap::new(),
-        book: OpeningBook::new(BOOK_FILE),
+        book: opening_book,
         position_loaded: "".to_string(),
         moves_loaded: "".to_string(),
         curr_max_depth: 0,
@@ -41,10 +48,12 @@ impl Engine {
     pub fn search(&mut self, depth: i32, max_time: u128) -> (i32, Move) {
         if self.position_loaded == "startpos" {
             let moves = self.moves_loaded.split(" ");
-            if moves.collect::<Vec<_>>().len() < BOOK_DEPTH as usize {
-                let mov = self.book.query(&self.moves_loaded);
-                if mov.is_some() {
-                    return (0, self.board.move_from_str(&mov.unwrap()));
+            if let Some(book) = &self.book {
+                if moves.collect::<Vec<_>>().len() < BOOK_DEPTH as usize {
+                    let mov = book.query(&self.moves_loaded);
+                    if let Some(mov) = mov {
+                        return (0, self.board.move_from_str(&mov));
+                    }
                 }
             }
         }

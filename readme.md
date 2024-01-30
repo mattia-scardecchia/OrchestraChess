@@ -17,6 +17,7 @@ Now, from the project directory, you can run the engine with:
 ```
 cargo run --release
 ```
+To activate the opening book, additionally pass `use-book` as a parameter.
 You will be able to communicate with the engine through the terminal, using the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html). For instance, you can have it analyze a position by passing it a fen, like this:
 ```
 position fen <your_favorite_fen>
@@ -58,7 +59,7 @@ This requires being able to efficiently hash the board state. We employ a 64-bit
 ### Opening Book
 
 To save time during the opening phase, we downloaded a database of 44M games from Lichess, filtered them based on players' ratings and time control, and built a tree rooted in the starting position in which a node's children are all the positions that have been reached after that node in the filtered database. The end result is a 213Mb tree that can be efficiently queried for the most played continuation up to move 15 (although move quality obviously deteriorates with depth). For simplicity, we ignored transpositions here.
-The python scripts used to create the opening book can be found in the `opening_book_processing` directory. To activate the opening book, set USE_BOOK to true in the `src/book.rs` file.
+The python scripts used to create the opening book can be found in the `opening_book_processing` directory.
 
 ## UCI Protocol
 

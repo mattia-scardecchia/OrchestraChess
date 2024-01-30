@@ -6,12 +6,10 @@ use core::option::Option::None;
 use serde::{Deserialize, Serialize};
 
 const USE_BEST_MOVE: bool = true;
-const USE_BOOK: bool = false;
 
 pub struct OpeningBook {
     root: Node,
     seed: Option<u64>
-
 }
 
 impl OpeningBook {
@@ -20,20 +18,15 @@ impl OpeningBook {
         let mut file = File::open(path_to_file).expect("Unable to open file");
         let mut json_string = String::new();
         file.read_to_string(&mut json_string).expect("Unable to read file");
-
-        // Deserialize the JSON string into a Node tree
         let deserialized_root: Node = serde_json::from_str(&json_string).expect("Unable to deserialize JSON");
         OpeningBook {
             root: deserialized_root,
-            // seed: Option::from(11122001_u64)
             seed: None
+            // seed: Option::from(11122001_u64)
         }
     }
 
     pub fn query(&self, moves: &str) -> Option<String> {
-        if !USE_BOOK{
-            return None;
-        }
         let mut current_node = &self.root;
         for mov in moves.split_whitespace() {
             let mut found = false;

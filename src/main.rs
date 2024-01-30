@@ -14,10 +14,15 @@ mod nnue;
 mod accumulator;
 
 use std::io;
+use std::env;
 
 
 fn main() {
-    let mut orchestra_director = orchestradirector::new_orchestra_director();
+    let args: Vec<String> = env::args().collect();
+    let use_book = args.len() > 1 && args[1] == "use-book";
+    let mut orchestra_director = orchestradirector::new_orchestra_director(use_book);
+
+
     loop {
         let mut message = String::new();
 

@@ -18,11 +18,10 @@ pub struct OrchestraDirector {
 
 }
 
-pub fn new_orchestra_director() -> OrchestraDirector {
+pub fn new_orchestra_director(use_book: bool) -> OrchestraDirector {
     OrchestraDirector {
-        eng: new_engine(Board::empty_board()),
+        eng: new_engine(Board::empty_board(), use_book),
         timer: Timer::new_timer(),
-
     }
 }
 
