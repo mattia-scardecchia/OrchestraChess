@@ -39,11 +39,55 @@ impl OrchestraDirector {
             "stop" => self.uci_handle_stop(),
             "quit" => self.uci_handle_quit(),
             "setoption" => {} // Do nothing for "setoption"
+            "islegal" => self.gui_handle_islegal(options),
+            "gameover" => self.gui_handle_gameover(),
             _ => {
                 if debug!() {
                     panic!("NotImplementedError: {} {}", command, options);
                 }
             }
+        }
+    }
+
+    fn gui_handle_gameover(&mut self) {
+        let legal_moves = self.eng.board.generate_moves(false);
+        if legal_moves.len() == 0 {
+            if self.eng.board.is_check() {
+                println!("checkmate");
+            } else {
+                println!("stalemate");
+            }
+        } else {
+            println!("game not over");
+        }
+    }
+
+    fn gui_handle_islegal(&mut self, options: &str) {
+        let mov = self.eng.board.move_from_str(options);
+        let legal_moves = self.eng.board.generate_moves(false);
+        let mut is_legal = false;
+        for m in legal_moves.quiet_moves.iter() {
+            if m == &mov {
+                is_legal = true;
+                break;
+            }
+        }
+        for m in legal_moves.capture_moves.iter() {
+            if m == &mov {
+                is_legal = true;
+                break;
+            }
+        }
+        for m in legal_moves.priority_moves.iter() {
+            if m == &mov {
+                is_legal = true;
+                break;
+            }
+        }
+        if is_legal {
+            println!("legal");
+        } else {
+            println!("illegal");
         }
     }
 

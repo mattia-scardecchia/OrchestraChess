@@ -19,9 +19,9 @@ fn move_score_capture(m: &Move) -> i32 {
 }
 
 pub struct MoveManager {
-    quiet_moves: Vec<Move>,
-    capture_moves: Vec<Move>,
-    priority_moves: Vec<Move>,
+    pub quiet_moves: Vec<Move>,
+    pub capture_moves: Vec<Move>,
+    pub priority_moves: Vec<Move>,
 }
 
 impl MoveManager {

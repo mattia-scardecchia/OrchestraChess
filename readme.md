@@ -6,28 +6,54 @@ Development repo: [here](https://github.com/DarioFi/OrchestraChess)
 
 ## Usage
 
+You can interact with the engine from the terminal, through the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html), as well as through a pygame GUI.
+
+### Build
+
 To install and build the project, fire up a terminal and run:
+
 ```
 git clone https://github.com/MattiaSC01/ChessBot.git
 cd ChessBot
 dvc pull
 cargo build --release
 ```
-Now, from the project directory, you can run the engine with:
+
+### GUI
+
+To play against the engine in the GUI, from the project root directory, run:
+
+```
+cd gui
+python main.py --verbose <verbose>
+```
+
+If you pass `--verbose 1`, the GUI handler will log queries and replies of the engine. By default, it won't.
+
+### UCI Protocol
+
+To communicate with the engine through the UCI protocol, simply run the executable. For instance, with cargo:
+
 ```
 cargo run --release
 ```
-To activate the opening book, additionally pass `use-book` as a parameter to the executable.
-You will be able to communicate with the engine through the terminal, using the [UCI protocol](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html). For instance, you can have it analyze a position by passing it a fen, like this:
+
+You can pass `use-book` as a parameter to the executable to activate the opening book.
+You can ask the engine to analyze a specific position by passing a fen, like this:
+
 ```
-position fen <your_favorite_fen>
+position fen <fen>
 go depth <depth>
 ```
-You can also pass a position by specifying the sequence of moves since the beginning of the game, specifying starting and ending square. For example:
+
+You can also pass a position as a sequence of moves since the beginning of the game, specifying starting and ending square of each. For example:
+
 ```
 position startpos moves e2e4 e7e5 f2f4
 ```
+
 Finally, instead of asking an analysis to a given depth, like above, you can specify the amount of time that should be spent, in milliseconds:
+
 ```
 go movetime <time_in_millis>
 ```
@@ -38,7 +64,7 @@ Here we describe the main components of the engine. Code can be found in the `sr
 
 ### Board representation
 
-We adopt a piece centric representation through a set-wise bitboard approach: for every color, and every piece type, we maintain a 64-bit integer that, read in binary, has ones in correspondence of all squares occupied by a piece of that type and color and zeros elsewhere. 
+We adopt a piece centric representation through a set-wise bitboard approach: for every color, and every piece type, we maintain a 64-bit integer that, read in binary, has ones in correspondence of all squares occupied by a piece of that type and color and zeros elsewhere.
 This choice makes move generation very efficient, because it allows to exploit bitwise operations that are extremely efficient on modern hardware.
 
 ### Principal Variation Search
@@ -67,9 +93,9 @@ We implemented the common UCI protocol to be able to communicate with existing G
 
 ## Sources
 
-* [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page)
-* [Lichess](https://lichess.org)
-* [lichess-bot repo](https://github.com/lichess-bot-devs/lichess-bot)
-* [NNUE repo](https://github.com/official-stockfish/nnue-pytorch)
-* [Stockfish repo](https://github.com/official-stockfish/Stockfish)
-* [Sebastian League's Chess Coding Adventure](https://github.com/SebLague/Chess-Coding-Adventure)
+- [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page)
+- [Lichess](https://lichess.org)
+- [lichess-bot repo](https://github.com/lichess-bot-devs/lichess-bot)
+- [NNUE repo](https://github.com/official-stockfish/nnue-pytorch)
+- [Stockfish repo](https://github.com/official-stockfish/Stockfish)
+- [Sebastian League's Chess Coding Adventure](https://github.com/SebLague/Chess-Coding-Adventure)
