@@ -1,6 +1,5 @@
+use crate::nnue::read_utilities::{get_padded, read_i32, read_i8};
 use std::fs::File;
-use crate::nnue::read_utilities::{read_i32, read_i8, get_padded};
-
 
 type InputType = i8;
 type OutputType = i32;
@@ -13,11 +12,14 @@ pub struct AffineTransform {
 
     bias: Vec<BiasType>,
     weights: Vec<Vec<WeightType>>,
-
 }
 
 impl AffineTransform {
-    pub(crate) fn read_parameters(file: &mut File, out_dims: usize, in_dims: usize) -> AffineTransform {
+    pub(crate) fn read_parameters(
+        file: &mut File,
+        out_dims: usize,
+        in_dims: usize,
+    ) -> AffineTransform {
         let mut bias = Vec::new();
         for _ in 0..out_dims {
             bias.push(read_i32(file));

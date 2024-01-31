@@ -1,17 +1,16 @@
-use crate::utils::PieceType;
 use crate::engine::MATING_SCORE;
 use crate::muve::Move;
-
+use crate::utils::PieceType;
 
 fn piece_score(piece: PieceType) -> i32 {
     match piece {
-        PieceType::Null => { 0 }
-        PieceType::Pawn => { 100 }
-        PieceType::Knight => { 300 }
-        PieceType::Bishop => { 330 }
-        PieceType::Rook => { 500 }
-        PieceType::Queen => { 900 }
-        PieceType::King => { MATING_SCORE }
+        PieceType::Null => 0,
+        PieceType::Pawn => 100,
+        PieceType::Knight => 300,
+        PieceType::Bishop => 330,
+        PieceType::Rook => 500,
+        PieceType::Queen => 900,
+        PieceType::King => MATING_SCORE,
     }
 }
 
@@ -27,11 +26,16 @@ pub struct MoveManager {
 
 impl MoveManager {
     pub fn new() -> MoveManager {
-        MoveManager { quiet_moves: vec![], capture_moves: vec![], priority_moves: vec![] }
+        MoveManager {
+            quiet_moves: vec![],
+            capture_moves: vec![],
+            priority_moves: vec![],
+        }
     }
 
     pub fn add_move(&mut self, m: Move) {
-        if m.piece_captured != PieceType::Null || m.is_en_passant || m.promotion != PieceType::Null {
+        if m.piece_captured != PieceType::Null || m.is_en_passant || m.promotion != PieceType::Null
+        {
             self.capture_moves.push(m);
         } else {
             self.quiet_moves.push(m);
@@ -54,12 +58,14 @@ impl MoveManager {
         self.capture_moves.sort_by_key(|a| -move_score_capture(a));
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&Move> {
-        return self.priority_moves.iter().chain(self.capture_moves.iter().chain(self.quiet_moves.iter()));
+    pub fn iter(&self) -> impl Iterator<Item = &Move> {
+        return self
+            .priority_moves
+            .iter()
+            .chain(self.capture_moves.iter().chain(self.quiet_moves.iter()));
     }
 
     pub fn len(&self) -> usize {
         return self.quiet_moves.len() + self.capture_moves.len() + self.priority_moves.len();
     }
 }
-

@@ -1,9 +1,9 @@
-use std::fs::File;
-use crate::nnue::feature_transformer::{ TRANSFORMED_FEATURE_DIMENSIONS};
+use crate::nnue::feature_transformer::TRANSFORMED_FEATURE_DIMENSIONS;
 use crate::nnue::layer_affine_transform::AffineTransform;
 use crate::nnue::layer_affine_transform_sparse::TransformSparse;
-use crate::nnue::layer_sqr_clipped_relu::SqrClippedReLU;
 use crate::nnue::layer_clipped_relu::ClippedRelu;
+use crate::nnue::layer_sqr_clipped_relu::SqrClippedReLU;
+use std::fs::File;
 
 pub struct Architecture {
     fc_0: TransformSparse,
@@ -22,7 +22,11 @@ const WEIGHT_SCALE_BITS: i32 = 6;
 
 impl Architecture {
     pub(crate) fn read_parameters(file: &mut File) -> Architecture {
-        let fc_0 = TransformSparse::read_parameters(file, FC_0_OUT_DIMS + 1, TRANSFORMED_FEATURE_DIMENSIONS);
+        let fc_0 = TransformSparse::read_parameters(
+            file,
+            FC_0_OUT_DIMS + 1,
+            TRANSFORMED_FEATURE_DIMENSIONS,
+        );
         let ac_sqr_0 = SqrClippedReLU::new();
         let ac_0 = ClippedRelu::new();
         let fc_1 = AffineTransform::read_parameters(file, FC_1_OUT_DIMS, FC_0_OUT_DIMS * 2);
@@ -59,7 +63,6 @@ impl Architecture {
         let mut combined_output = Vec::new();
         combined_output.append(&mut ac_sqr_0_out);
         combined_output.append(&mut ac_0_out);
-
 
         let fc_1_out = self.fc_1.propagate(combined_output);
         let ac_1_out = self.ac_1.propagate(&fc_1_out);

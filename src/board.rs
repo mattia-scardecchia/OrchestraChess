@@ -1,16 +1,20 @@
 use std::cmp::min;
 use std::ops::{Index, IndexMut};
 
+use crate::magic::DIRECTIONS::{NE, NW, SE, SW};
+use crate::magic::{
+    coord_bit, coord_to_int, new_magic, square_num_to_bitboard, Magics, DIAGONAL_DIRS, DIRECTIONS,
+    STRAIGHT_DIRS,
+};
+use crate::move_manager::MoveManager;
 use crate::muve::{create_move, Move};
+use crate::nnue::nnue::Nnue;
 use crate::utils::COLOR;
 use crate::utils::COLOR::{BLACK, WHITE};
-use crate::utils::{lsb, MASK_ONES, MOVING_PIECES, PieceType, pop_count, remove_lsb, square_string_to_int};
-use crate::magic::{coord_bit, coord_to_int, DIAGONAL_DIRS, DIRECTIONS, Magics, new_magic, square_num_to_bitboard, STRAIGHT_DIRS};
-use crate::magic::DIRECTIONS::{NE, NW, SE, SW};
-use crate::move_manager::MoveManager;
-use crate::nnue::nnue::Nnue;
+use crate::utils::{
+    lsb, pop_count, remove_lsb, square_string_to_int, PieceType, MASK_ONES, MOVING_PIECES,
+};
 use crate::zobrist::init_zobrist;
-
 
 pub struct Board {
     pub(crate) my_pieces: PieceBitBoards,
@@ -35,7 +39,6 @@ pub struct Board {
     pub(crate) zobrist: ZobristHashHandler,
 }
 
-
 #[derive(Clone, Copy, Debug)]
 pub struct PieceBitBoards {
     pub(crate) pawn: u64,
@@ -45,7 +48,6 @@ pub struct PieceBitBoards {
     pub(crate) queen: u64,
     pub(crate) king: u64,
 }
-
 
 struct UtilityBitBoards {
     my_occupancy: u64,
@@ -70,18 +72,15 @@ struct UtilityBitBoards {
     opponent_king_attacks: u64,
 }
 
-
 pub struct ZobristHashHandler {
     pub table: [[u64; 12]; 64],
     pub black_to_move: u64,
     pub hash: u64,
 }
 
-
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug)]
 struct CastlingRights(u8);
-
 
 impl PieceBitBoards {
     fn new() -> PieceBitBoards {
@@ -126,7 +125,6 @@ impl IndexMut<PieceType> for PieceBitBoards {
     }
 }
 
-
 impl UtilityBitBoards {
     fn new() -> UtilityBitBoards {
         UtilityBitBoards {
@@ -151,7 +149,6 @@ impl UtilityBitBoards {
     }
 }
 
-
 const WK: u8 = 1 << 0;
 const WQ: u8 = 1 << 1;
 const BK: u8 = 1 << 2;
@@ -170,7 +167,6 @@ const BK_EMPTY: u64 = coord_bit(7, 5) | coord_bit(7, 6);
 const BQ_EMPTY: u64 = coord_bit(7, 1) | coord_bit(7, 2) | coord_bit(7, 3);
 const BK_ATTACK: u64 = BK_EMPTY;
 const BQ_ATTACK: u64 = coord_bit(7, 2) | coord_bit(7, 3);
-
 
 impl CastlingRights {
     fn can_wq(&self) -> bool {
@@ -201,10 +197,18 @@ impl CastlingRights {
 
     fn moved_rook(&mut self, square: u8) {
         match square {
-            0 => { self.0 &= !WQ; }
-            7 => { self.0 &= !WK; }
-            56 => { self.0 &= !BQ; }
-            63 => { self.0 &= !BK; }
+            0 => {
+                self.0 &= !WQ;
+            }
+            7 => {
+                self.0 &= !WK;
+            }
+            56 => {
+                self.0 &= !BQ;
+            }
+            63 => {
+                self.0 &= !BK;
+            }
             _ => {}
         }
     }
@@ -312,7 +316,9 @@ impl Board {
                     rank -= 1;
                     file = 0;
                 }
-                _ => { file += p.to_digit(10).unwrap() as u8; }
+                _ => {
+                    file += p.to_digit(10).unwrap() as u8;
+                }
             }
         }
 
@@ -327,18 +333,32 @@ impl Board {
                 self.my_pieces = self.opponent_pieces.clone();
                 self.opponent_pieces = tmp.clone();
             }
-            _ => { panic!("Invalid color"); }
+            _ => {
+                panic!("Invalid color");
+            }
         }
 
         let castling = parts[2];
         for c in castling.chars() {
             match c {
-                'K' => { self.castling_rights.0 |= WK; }
-                'Q' => { self.castling_rights.0 |= WQ; }
-                'k' => { self.castling_rights.0 |= BK; }
-                'q' => { self.castling_rights.0 |= BQ; }
-                '-' => { self.castling_rights.0 = 0; }
-                _ => { panic!("Invalid castling rights"); }
+                'K' => {
+                    self.castling_rights.0 |= WK;
+                }
+                'Q' => {
+                    self.castling_rights.0 |= WQ;
+                }
+                'k' => {
+                    self.castling_rights.0 |= BK;
+                }
+                'q' => {
+                    self.castling_rights.0 |= BQ;
+                }
+                '-' => {
+                    self.castling_rights.0 = 0;
+                }
+                _ => {
+                    panic!("Invalid castling rights");
+                }
             }
         }
 
@@ -366,8 +386,18 @@ impl Board {
 // region Utilities update
 impl Board {
     fn update_utilities(&mut self) {
-        self.utility.opponent_occupancy = self.opponent_pieces.pawn | self.opponent_pieces.knight | self.opponent_pieces.bishop | self.opponent_pieces.rook | self.opponent_pieces.queen | self.opponent_pieces.king;
-        self.utility.my_occupancy = self.my_pieces.pawn | self.my_pieces.knight | self.my_pieces.bishop | self.my_pieces.rook | self.my_pieces.queen | self.my_pieces.king;
+        self.utility.opponent_occupancy = self.opponent_pieces.pawn
+            | self.opponent_pieces.knight
+            | self.opponent_pieces.bishop
+            | self.opponent_pieces.rook
+            | self.opponent_pieces.queen
+            | self.opponent_pieces.king;
+        self.utility.my_occupancy = self.my_pieces.pawn
+            | self.my_pieces.knight
+            | self.my_pieces.bishop
+            | self.my_pieces.rook
+            | self.my_pieces.queen
+            | self.my_pieces.king;
         self.utility.all_occupancy = self.utility.my_occupancy | self.utility.opponent_occupancy;
 
         self.update_pinned_checkers();
@@ -390,24 +420,29 @@ impl Board {
 
         // knights
         let potential_attackers = self.magics.get_knight_moves(king_square);
-        self.utility.checkers |= potential_attackers & self.opponent_pieces.knight;  // if a knight is on an attacker square add it to checkers
+        self.utility.checkers |= potential_attackers & self.opponent_pieces.knight; // if a knight is on an attacker square add it to checkers
 
         // pawns
-        let potential_attackers = self.magics.get_pawn_captures(king_square, self.color_to_move);
-        self.utility.checkers |= potential_attackers & self.opponent_pieces.pawn;  // idea is that it is symmetric
+        let potential_attackers = self
+            .magics
+            .get_pawn_captures(king_square, self.color_to_move);
+        self.utility.checkers |= potential_attackers & self.opponent_pieces.pawn; // idea is that it is symmetric
 
         self.utility.blocker_squares = self.utility.checkers;
 
         // rays
         for dir in STRAIGHT_DIRS.iter() {
             let dir = *dir;
-            let xray_mask = self.magics.get_rays_moves(king_square, self.utility.opponent_occupancy, dir);
+            let xray_mask =
+                self.magics
+                    .get_rays_moves(king_square, self.utility.opponent_occupancy, dir);
             let pierced_pieces = xray_mask & self.utility.my_occupancy;
             if pop_count(pierced_pieces) > 1 {
                 continue;
             } else {
                 let hitter = xray_mask & (self.opponent_pieces.queen | self.opponent_pieces.rook);
-                if pop_count(hitter) == 1 { // means we are attacked by something
+                if pop_count(hitter) == 1 {
+                    // means we are attacked by something
 
                     if pop_count(pierced_pieces) == 1 {
                         self.utility.pinned |= pierced_pieces;
@@ -426,13 +461,16 @@ impl Board {
 
         for dir in DIAGONAL_DIRS.iter() {
             let dir = *dir;
-            let xray_mask = self.magics.get_rays_moves(king_square, self.utility.opponent_occupancy, dir);
+            let xray_mask =
+                self.magics
+                    .get_rays_moves(king_square, self.utility.opponent_occupancy, dir);
             let pierced_pieces = xray_mask & self.utility.my_occupancy;
             if pop_count(pierced_pieces) > 1 {
                 continue;
             } else {
                 let hitter = xray_mask & (self.opponent_pieces.queen | self.opponent_pieces.bishop);
-                if pop_count(hitter) == 1 { // means we are attacked by something
+                if pop_count(hitter) == 1 {
+                    // means we are attacked by something
 
                     if pop_count(pierced_pieces) == 1 {
                         self.utility.pinned |= pierced_pieces;
@@ -459,7 +497,6 @@ impl Board {
         self.utility.opponent_queen_attacks = 0;
         self.utility.opponent_king_attacks = 0;
 
-
         // king
         let sq = lsb(self.opponent_pieces.king);
         self.utility.opponent_king_attacks |= self.gen_king_moves_bitboard(sq);
@@ -469,11 +506,11 @@ impl Board {
         let mut sq = lsb(pawns);
         pawns = remove_lsb(pawns);
         while sq != 64 {
-            self.utility.opponent_pawn_attacks |= self.magics.get_pawn_captures(sq, self.color_to_move.flip());
+            self.utility.opponent_pawn_attacks |=
+                self.magics.get_pawn_captures(sq, self.color_to_move.flip());
             sq = lsb(pawns);
             pawns = remove_lsb(pawns);
         }
-
 
         // knight
         let mut knigths = self.opponent_pieces.knight;
@@ -484,7 +521,6 @@ impl Board {
             sq = lsb(knigths);
             knigths = remove_lsb(knigths);
         }
-
 
         // from now on we should use a version without the king because we need pierced attacks
         let blockers = self.utility.all_occupancy & !self.my_pieces.king;
@@ -519,7 +555,12 @@ impl Board {
             queen = remove_lsb(queen);
         }
 
-        self.utility.sq_attacked_by_oppo = self.utility.opponent_pawn_attacks | self.utility.opponent_knight_attacks | self.utility.opponent_bishop_attacks | self.utility.opponent_rook_attacks | self.utility.opponent_queen_attacks | self.utility.opponent_king_attacks;
+        self.utility.sq_attacked_by_oppo = self.utility.opponent_pawn_attacks
+            | self.utility.opponent_knight_attacks
+            | self.utility.opponent_bishop_attacks
+            | self.utility.opponent_rook_attacks
+            | self.utility.opponent_queen_attacks
+            | self.utility.opponent_king_attacks;
     }
 
     pub fn is_check(&self) -> bool {
@@ -536,28 +577,28 @@ impl Board {
         let start_square = square_string_to_int(&mov[0..2]);
         let end_square = square_string_to_int(&mov[2..4]);
         let promotion = match mov.len() {
-            5 => {
-                match mov.chars().nth(4).unwrap() {
-                    'q' => PieceType::Queen,
-                    'r' => PieceType::Rook,
-                    'b' => PieceType::Bishop,
-                    'n' => PieceType::Knight,
-                    _ => panic!("Invalid promotion"),
-                }
-            }
+            5 => match mov.chars().nth(4).unwrap() {
+                'q' => PieceType::Queen,
+                'r' => PieceType::Rook,
+                'b' => PieceType::Bishop,
+                'n' => PieceType::Knight,
+                _ => panic!("Invalid promotion"),
+            },
             _ => PieceType::Null,
         };
         let piece_moved = self.get_my_piece_on_square(start_square);
         let _piece_captured = self.get_opponent_piece_on_square(end_square);
         let is_castling;
-        if (piece_moved == PieceType::King) && (end_square as i32 - start_square as i32).abs() == 2 {
+        if (piece_moved == PieceType::King) && (end_square as i32 - start_square as i32).abs() == 2
+        {
             is_castling = true;
         } else {
             is_castling = false
         }
         let is_enpassant;
 
-        if piece_moved == PieceType::Pawn && end_square == self.en_passant_square && end_square != 0 {
+        if piece_moved == PieceType::Pawn && end_square == self.en_passant_square && end_square != 0
+        {
             is_enpassant = true;
         } else {
             is_enpassant = false;
@@ -614,7 +655,11 @@ impl Board {
         moves_manager
     }
 
-    fn gen_moves_land_mask_normal_pieces(&mut self, land_mask: u64, moves_manager: &mut MoveManager) {
+    fn gen_moves_land_mask_normal_pieces(
+        &mut self,
+        land_mask: u64,
+        moves_manager: &mut MoveManager,
+    ) {
         // iterate over pieces then run gen_moves using land_mask
         // similarly to how we generate attacks in the update utilities
         // knights
@@ -622,7 +667,6 @@ impl Board {
         let mut sq = lsb(knights);
         knights = remove_lsb(knights);
         while sq != 64 {
-
             // if pinned skip
             if (self.utility.pinned & square_num_to_bitboard(sq)) != 0 {
                 sq = lsb(knights);
@@ -688,7 +732,6 @@ impl Board {
         return PieceType::Null;
     }
 
-
     pub(crate) fn get_my_piece_on_square(&self, index: u8) -> PieceType {
         let sqntb = square_num_to_bitboard(index);
         if (self.my_pieces.pawn & sqntb) != 0 {
@@ -726,7 +769,8 @@ impl Board {
     }
 
     fn gen_king_moves(&self, square: u8, captures: bool, move_manager: &mut MoveManager) {
-        let legal_moves = self.gen_king_moves_bitboard(square) & (!self.utility.sq_attacked_by_oppo);
+        let legal_moves =
+            self.gen_king_moves_bitboard(square) & (!self.utility.sq_attacked_by_oppo);
         let fin: u64;
         //todo: why not passing land mask instead of a bool
         if captures {
@@ -755,16 +799,15 @@ impl Board {
             let pinned_ns = (self.utility.pinned_ns & sqntb) != 0;
 
             if pinned_ns {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::N][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::S][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::N][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::S][square as usize];
             }
             let pinned_we = (self.utility.pinned_we & sqntb) != 0;
             if pinned_we {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::E][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::W][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::E][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::W][square as usize];
             }
         }
-
 
         let legal_moves = self.gen_rook_moves_bitboard(square) & land_mask;
         self.loop_over_moves_mask(legal_moves, PieceType::Rook, square, move_manager)
@@ -785,11 +828,11 @@ impl Board {
             let pinned_nwse = (self.utility.pinned_nwse & sqntb) != 0;
             let pinned_swne = (self.utility.pinned_swne & sqntb) != 0;
             if pinned_nwse {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::NW][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::SE][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::NW][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::SE][square as usize];
             } else if pinned_swne {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::SW][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::NE][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::SW][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::NE][square as usize];
             }
         }
 
@@ -803,31 +846,37 @@ impl Board {
         if pinned {
             let pinned_ns = (self.utility.pinned_ns & sqntb) != 0;
             if pinned_ns {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::N][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::S][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::N][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::S][square as usize];
             }
             let pinned_we = (self.utility.pinned_we & sqntb) != 0;
             if pinned_we {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::E][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::W][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::E][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::W][square as usize];
             }
             let pinned_nwse = (self.utility.pinned_nwse & sqntb) != 0;
             if pinned_nwse {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::NW][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::SE][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::NW][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::SE][square as usize];
             }
             let pinned_swne = (self.utility.pinned_swne & sqntb) != 0;
 
             if pinned_swne {
-                land_mask &= self.magics.direction_full_masks[DIRECTIONS::SW][square as usize] |
-                    self.magics.direction_full_masks[DIRECTIONS::NE][square as usize];
+                land_mask &= self.magics.direction_full_masks[DIRECTIONS::SW][square as usize]
+                    | self.magics.direction_full_masks[DIRECTIONS::NE][square as usize];
             }
         }
 
         let legal_moves = self.gen_queen_moves_bitboard(square) & land_mask;
         self.loop_over_moves_mask(legal_moves, PieceType::Queen, square, move_manager);
     }
-    fn loop_over_moves_mask(&self, mut mask: u64, piece_moved: PieceType, start_square: u8, move_manager: &mut MoveManager) {
+    fn loop_over_moves_mask(
+        &self,
+        mut mask: u64,
+        piece_moved: PieceType,
+        start_square: u8,
+        move_manager: &mut MoveManager,
+    ) {
         let mut end_square = lsb(mask);
         while end_square != 64 {
             move_manager.add_move(Move {
@@ -848,11 +897,15 @@ impl Board {
         self.gen_bishop_moves_bitboard(square) | self.gen_rook_moves_bitboard(square)
     }
     fn gen_bishop_moves_bitboard(&self, square: u8) -> u64 {
-        let potential = self.magics.get_bishop_moves(square, self.utility.all_occupancy);
+        let potential = self
+            .magics
+            .get_bishop_moves(square, self.utility.all_occupancy);
         potential & (!self.utility.my_occupancy)
     }
     fn gen_rook_moves_bitboard(&self, square: u8) -> u64 {
-        let potential: u64 = self.magics.get_rook_moves(square, self.utility.all_occupancy);
+        let potential: u64 = self
+            .magics
+            .get_rook_moves(square, self.utility.all_occupancy);
         potential & (!self.utility.my_occupancy)
     }
 
@@ -865,7 +918,6 @@ impl Board {
         let potential = self.magics.get_king_moves(square);
         potential & (!self.utility.my_occupancy)
     }
-
 
     fn gen_pawns_legal(&self, land_mask: u64, move_manager: &mut MoveManager) {
         // pushes
@@ -896,15 +948,13 @@ impl Board {
             let push = square_num_to_bitboard((sq as i32 + direction) as u8);
             let pinned = (self.utility.pinned & sqntb) != 0;
             let pinned_ns = (self.utility.pinned_ns & sqntb) != 0;
-            if push != 0
-            {
+            if push != 0 {
                 let can_move_vert;
                 if pinned {
                     can_move_vert = pinned_ns;
                 } else {
                     can_move_vert = true;
                 }
-
 
                 if (self.utility.all_occupancy & push == 0) && can_move_vert {
                     if push & promotion_rank == 0 {
@@ -923,8 +973,11 @@ impl Board {
 
                         if square_num_to_bitboard(sq) & back_rank != 0 {
                             // double push
-                            let double_push = square_num_to_bitboard((sq as i32 + 2 * direction) as u8);
-                            if (self.utility.all_occupancy & double_push == 0) && (double_push & land_mask != 0) {
+                            let double_push =
+                                square_num_to_bitboard((sq as i32 + 2 * direction) as u8);
+                            if (self.utility.all_occupancy & double_push == 0)
+                                && (double_push & land_mask != 0)
+                            {
                                 move_manager.add_move(create_move(
                                     sq,
                                     (sq as i32 + 2 * direction) as u8,
@@ -949,14 +1002,15 @@ impl Board {
                                 false,
                                 false,
                             ))
-                        };
+                        }
                     }
                 }
             }
 
             // check capture
             if !pinned_ns {
-                let capture_mask_pre_land_mask: u64 = self.magics.get_pawn_captures(sq, self.color_to_move);
+                let capture_mask_pre_land_mask: u64 =
+                    self.magics.get_pawn_captures(sq, self.color_to_move);
                 let capture_mask_total = capture_mask_pre_land_mask & land_mask;
                 let mut en_passant_mask: u64;
                 let pinned_we = (self.utility.pinned_we & sqntb) != 0;
@@ -974,23 +1028,24 @@ impl Board {
                     } else {
                         enpmld = land_mask >> (-direction);
                     }
-                    en_passant_mask = square_num_to_bitboard(self.en_passant_square) & capture_mask_pre_land_mask & enpmld;
+                    en_passant_mask = square_num_to_bitboard(self.en_passant_square)
+                        & capture_mask_pre_land_mask
+                        & enpmld;
                 } else {
                     en_passant_mask = 0;
                 }
-
 
                 let mut capture_mask = capture_mask_total & self.utility.opponent_occupancy;
 
                 let pinned_diag_swne = (self.utility.pinned_swne & sqntb) != 0;
                 let pinned_diag_nwse = (self.utility.pinned_nwse & sqntb) != 0;
                 if pinned_diag_nwse {
-                    capture_mask &= self.magics.get_rays_moves(sq, 0, NW) |
-                        self.magics.get_rays_moves(sq, 0, SE);
+                    capture_mask &= self.magics.get_rays_moves(sq, 0, NW)
+                        | self.magics.get_rays_moves(sq, 0, SE);
                 }
                 if pinned_diag_swne {
-                    capture_mask &= self.magics.get_rays_moves(sq, 0, SW) |
-                        self.magics.get_rays_moves(sq, 0, NE);
+                    capture_mask &= self.magics.get_rays_moves(sq, 0, SW)
+                        | self.magics.get_rays_moves(sq, 0, NE);
                 }
 
                 let mut capture_sq = lsb(capture_mask);
@@ -1020,7 +1075,7 @@ impl Board {
                                 false,
                                 false,
                             ))
-                        };
+                        }
                     }
                     capture_sq = lsb(capture_mask);
                     capture_mask = remove_lsb(capture_mask);
@@ -1030,12 +1085,12 @@ impl Board {
                     let pinned_diag_swne = (self.utility.pinned_swne & sqntb) != 0;
                     let pinned_diag_nwse = (self.utility.pinned_nwse & sqntb) != 0;
                     if pinned_diag_nwse {
-                        en_passant_mask &= self.magics.get_rays_moves(sq, 0, NW) |
-                            self.magics.get_rays_moves(sq, 0, SE);
+                        en_passant_mask &= self.magics.get_rays_moves(sq, 0, NW)
+                            | self.magics.get_rays_moves(sq, 0, SE);
                     }
                     if pinned_diag_swne {
-                        en_passant_mask &= self.magics.get_rays_moves(sq, 0, SW) |
-                            self.magics.get_rays_moves(sq, 0, NE);
+                        en_passant_mask &= self.magics.get_rays_moves(sq, 0, SW)
+                            | self.magics.get_rays_moves(sq, 0, NE);
                     }
                     if en_passant_mask != 0 {
                         // means there is an en passant capture
@@ -1069,7 +1124,9 @@ impl Board {
 
                 if self.castling_rights.can_wq() {
                     if self.my_pieces.rook & WRQ_STARTPOS != 0 {
-                        if (self.utility.all_occupancy & WQ_EMPTY == 0) & (self.utility.sq_attacked_by_oppo & WQ_ATTACK == 0) {
+                        if (self.utility.all_occupancy & WQ_EMPTY == 0)
+                            & (self.utility.sq_attacked_by_oppo & WQ_ATTACK == 0)
+                        {
                             move_manager.add_move(Move {
                                 start_square: lsb(WK_STARTPOS),
                                 end_square: coord_to_int(0, 2),
@@ -1084,7 +1141,9 @@ impl Board {
                 }
                 if self.castling_rights.can_wk() {
                     if self.my_pieces.rook & WRK_STARTPOS != 0 {
-                        if (self.utility.all_occupancy & WK_EMPTY == 0) & (self.utility.sq_attacked_by_oppo & WK_ATTACK == 0) {
+                        if (self.utility.all_occupancy & WK_EMPTY == 0)
+                            & (self.utility.sq_attacked_by_oppo & WK_ATTACK == 0)
+                        {
                             move_manager.add_move(Move {
                                 start_square: lsb(WK_STARTPOS),
                                 end_square: coord_to_int(0, 6),
@@ -1101,7 +1160,9 @@ impl Board {
             COLOR::BLACK => {
                 if self.castling_rights.can_bq() {
                     if self.my_pieces.rook & BRQ_STARTPOS != 0 {
-                        if (self.utility.all_occupancy & BQ_EMPTY == 0) & (self.utility.sq_attacked_by_oppo & BQ_ATTACK == 0) {
+                        if (self.utility.all_occupancy & BQ_EMPTY == 0)
+                            & (self.utility.sq_attacked_by_oppo & BQ_ATTACK == 0)
+                        {
                             move_manager.add_move(Move {
                                 start_square: lsb(BK_STARTPOS),
                                 end_square: coord_to_int(7, 2),
@@ -1117,7 +1178,9 @@ impl Board {
 
                 if self.castling_rights.can_bk() {
                     if self.my_pieces.rook & BRK_STARTPOS != 0 {
-                        if (self.utility.all_occupancy & BK_EMPTY == 0) & (self.utility.sq_attacked_by_oppo & BK_ATTACK == 0) {
+                        if (self.utility.all_occupancy & BK_EMPTY == 0)
+                            & (self.utility.sq_attacked_by_oppo & BK_ATTACK == 0)
+                        {
                             move_manager.add_move(Move {
                                 start_square: lsb(BK_STARTPOS),
                                 end_square: coord_to_int(7, 6),
@@ -1208,7 +1271,6 @@ impl Board {
         return !(found_slider && found_king);
     }
 
-
     pub(crate) fn is_3fold(&self) -> bool {
         let hash = self.zobrist.hash;
         let stack_size = self.zobrist_stack.len();
@@ -1221,17 +1283,20 @@ impl Board {
         // this makes it such that only at the losing player depth the 3fold is recognized. A possible second way would be to check if the
         // last position also was a 3fold (claim)
         let last_index = stack_size - 1;
-        let  start = (last_index - moves_to_see) + (moves_to_see) % 2;
+        let start = (last_index - moves_to_see) + (moves_to_see) % 2;
         assert!(start % 2 == last_index % 2);
 
-        self.zobrist_stack[start..].iter().step_by(2).filter(|x| **x == hash).count() >= 2
+        self.zobrist_stack[start..]
+            .iter()
+            .step_by(2)
+            .filter(|x| **x == hash)
+            .count()
+            >= 2
     }
-
 
     #[allow(dead_code)]
     pub fn perft(&mut self, depth: i32, print_depth: i32, bulk_count: bool) -> u64 {
         let moves = self.generate_moves(false);
-
 
         if bulk_count && depth == 1 {
             return moves.len() as u64;
@@ -1273,8 +1338,8 @@ impl Board {
         match mov.piece_moved {
             PieceType::King => {
                 match self.color_to_move {
-                    WHITE => { self.castling_rights.moved_white_king() }
-                    BLACK => { self.castling_rights.moved_black_king() }
+                    WHITE => self.castling_rights.moved_white_king(),
+                    BLACK => self.castling_rights.moved_black_king(),
                 }
 
                 // check if castling
@@ -1289,8 +1354,12 @@ impl Board {
                 self.rule50 = 0;
                 if mov.is_en_passant {
                     match self.color_to_move {
-                        WHITE => { self.opponent_pieces.pawn &= !square_num_to_bitboard(mov.end_square - 8) }
-                        BLACK => { self.opponent_pieces.pawn &= !square_num_to_bitboard(mov.end_square + 8) }
+                        WHITE => {
+                            self.opponent_pieces.pawn &= !square_num_to_bitboard(mov.end_square - 8)
+                        }
+                        BLACK => {
+                            self.opponent_pieces.pawn &= !square_num_to_bitboard(mov.end_square + 8)
+                        }
                     }
                     self.my_pieces.pawn &= !square_num_to_bitboard(mov.start_square);
                     self.my_pieces.pawn |= square_num_to_bitboard(mov.end_square);
@@ -1299,7 +1368,8 @@ impl Board {
                     self.my_pieces[mov.promotion] |= square_num_to_bitboard(mov.end_square);
 
                     if mov.piece_captured != PieceType::Null {
-                        self.opponent_pieces[mov.piece_captured] &= !square_num_to_bitboard(mov.end_square);
+                        self.opponent_pieces[mov.piece_captured] &=
+                            !square_num_to_bitboard(mov.end_square);
                     }
                 } else {
                     if (mov.end_square as i32 - mov.start_square as i32).abs() == 16 {
@@ -1328,7 +1398,9 @@ impl Board {
             PieceType::Queen => {
                 self.make_simple_move(mov);
             }
-            PieceType::Null => { panic!("No bueno") }
+            PieceType::Null => {
+                panic!("No bueno")
+            }
         }
 
         self.color_to_move = self.color_to_move.flip();
@@ -1363,8 +1435,8 @@ impl Board {
     fn make_castling_move(&mut self, mov: Move) {
         let rank: u8;
         match self.color_to_move {
-            WHITE => { rank = 0 }
-            BLACK => { rank = 7 }
+            WHITE => rank = 0,
+            BLACK => rank = 7,
         }
 
         if mov.end_square == coord_to_int(rank, 2) {
@@ -1387,7 +1459,6 @@ impl Board {
     pub fn unmake_move(&mut self) {
         let mov = self.moves_stack.pop().unwrap();
 
-
         self.update_accumulator_on_unmake();
 
         self.castling_rights = self.castling_stack.pop().unwrap();
@@ -1403,7 +1474,6 @@ impl Board {
         self.my_pieces = self.opponent_pieces.clone();
         self.opponent_pieces = temp;
 
-
         match mov.piece_moved {
             PieceType::King => {
                 // check if castling
@@ -1416,8 +1486,12 @@ impl Board {
             PieceType::Pawn => {
                 if mov.is_en_passant {
                     match self.color_to_move {
-                        WHITE => { self.opponent_pieces.pawn |= square_num_to_bitboard(mov.end_square - 8) }
-                        BLACK => { self.opponent_pieces.pawn |= square_num_to_bitboard(mov.end_square + 8) }
+                        WHITE => {
+                            self.opponent_pieces.pawn |= square_num_to_bitboard(mov.end_square - 8)
+                        }
+                        BLACK => {
+                            self.opponent_pieces.pawn |= square_num_to_bitboard(mov.end_square + 8)
+                        }
                     }
                     self.my_pieces.pawn |= square_num_to_bitboard(mov.start_square);
                     self.my_pieces.pawn &= !square_num_to_bitboard(mov.end_square);
@@ -1426,7 +1500,8 @@ impl Board {
                     self.my_pieces.pawn |= square_num_to_bitboard(mov.start_square);
 
                     if mov.piece_captured != PieceType::Null {
-                        self.opponent_pieces[mov.piece_captured] |= square_num_to_bitboard(mov.end_square);
+                        self.opponent_pieces[mov.piece_captured] |=
+                            square_num_to_bitboard(mov.end_square);
                     }
                 } else {
                     self.unmake_simple_move(mov);
@@ -1451,8 +1526,8 @@ impl Board {
     fn unmake_castling_move(&mut self, mov: Move) {
         let rank: u8;
         match self.color_to_move {
-            WHITE => { rank = 0 }
-            BLACK => { rank = 7 }
+            WHITE => rank = 0,
+            BLACK => rank = 7,
         }
 
         if mov.end_square == coord_to_int(rank, 2) {

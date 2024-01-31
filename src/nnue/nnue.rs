@@ -1,12 +1,11 @@
-use std::fs::File;
-use std::io::Read;
 use crate::nnue::architecture::Architecture;
 use crate::nnue::feature_transformer::FeatureTransformer;
 use crate::nnue::read_utilities::read_u32;
+use std::fs::File;
+use std::io::Read;
 
 const FILE_NAME: &str = "nnue_weights/nn-0000000000a0.nnue";
 const LAYER_STACKS: usize = 8;
-
 
 pub(crate) struct Nnue {
     version: u32,
@@ -14,9 +13,7 @@ pub(crate) struct Nnue {
     size: u32,
     pub feature_transformer: FeatureTransformer,
     pub networks: Vec<Architecture>,
-
 }
-
 
 impl Nnue {
     pub fn init() -> Nnue {

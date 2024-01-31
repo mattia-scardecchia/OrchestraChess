@@ -1,6 +1,5 @@
 use crate::utils::PieceType;
 
-
 fn index_to_string(index: u8) -> String {
     let row = index / 8;
     let col = index % 8;
@@ -57,7 +56,15 @@ impl Move {
     }
 }
 
-pub fn create_move(start_square: u8, end_square: u8, piece_moved: PieceType, piece_captured: PieceType, promotion: PieceType, is_castling: bool, is_en_passant: bool) -> Move {
+pub fn create_move(
+    start_square: u8,
+    end_square: u8,
+    piece_moved: PieceType,
+    piece_captured: PieceType,
+    promotion: PieceType,
+    is_castling: bool,
+    is_en_passant: bool,
+) -> Move {
     Move {
         start_square,
         end_square,
@@ -70,5 +77,13 @@ pub fn create_move(start_square: u8, end_square: u8, piece_moved: PieceType, pie
 }
 
 pub fn null_move() -> Move {
-    create_move(0, 0, PieceType::Null, PieceType::Null, PieceType::Null, false, false)
+    create_move(
+        0,
+        0,
+        PieceType::Null,
+        PieceType::Null,
+        PieceType::Null,
+        false,
+        false,
+    )
 }

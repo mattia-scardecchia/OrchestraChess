@@ -1,12 +1,11 @@
+use crate::board::Board;
+use crate::board::ZobristHashHandler;
+use crate::muve::Move;
+use crate::utils::PieceType;
+use crate::utils::COLOR;
+use crate::utils::COLOR::{BLACK, WHITE};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
-use crate::board::ZobristHashHandler;
-use crate::board::Board;
-use crate::utils::COLOR::{BLACK, WHITE};
-use crate::utils::COLOR;
-use crate::utils::PieceType;
-use crate::muve::Move;
-
 
 pub fn init_zobrist() -> ZobristHashHandler {
     let mut rng = StdRng::seed_from_u64(11122001_u64);
@@ -20,14 +19,11 @@ pub fn init_zobrist() -> ZobristHashHandler {
         }
     }
 
-
-
     ZobristHashHandler {
         table,
         black_to_move,
         hash: 0,
     }
-
 }
 
 fn get_index(color: COLOR, piece: PieceType) -> usize {
@@ -36,23 +32,24 @@ fn get_index(color: COLOR, piece: PieceType) -> usize {
 
 fn piece_val(p: PieceType) -> usize {
     match p {
-        PieceType::Pawn => { 0 }
-        PieceType::Knight => { 1 }
-        PieceType::Bishop => { 2 }
-        PieceType::Rook => { 3 }
-        PieceType::Queen => { 4 }
-        PieceType::King => { 5 }
-        PieceType::Null => { panic!("Mucho poco bueno") }
+        PieceType::Pawn => 0,
+        PieceType::Knight => 1,
+        PieceType::Bishop => 2,
+        PieceType::Rook => 3,
+        PieceType::Queen => 4,
+        PieceType::King => 5,
+        PieceType::Null => {
+            panic!("Mucho poco bueno")
+        }
     }
 }
 
 fn color_val(color: COLOR) -> usize {
     match color {
-        WHITE => { 2 }
-        BLACK => { 0 }
+        WHITE => 2,
+        BLACK => 0,
     }
 }
-
 
 impl Board {
     pub fn init_hash(&mut self) {
@@ -81,28 +78,27 @@ impl Board {
         self.zobrist.hash = hash;
     }
 
-    pub(crate) fn update_hash(&mut self, mov: Move){
-        if mov.is_en_passant{
+    pub(crate) fn update_hash(&mut self, mov: Move) {
+        if mov.is_en_passant {
             self.init_hash();
             return;
         }
-        if mov.is_castling{
+        if mov.is_castling {
             self.init_hash();
             return;
         }
-
 
         let color_that_played_move = self.color_to_move.flip();
         self.zobrist.hash ^= self.zobrist.black_to_move;
 
-        if mov.piece_captured != PieceType::Null{
+        if mov.piece_captured != PieceType::Null {
             let ind_captured = get_index(color_that_played_move.flip(), mov.piece_captured);
             self.zobrist.hash ^= self.zobrist.table[mov.end_square as usize][ind_captured];
         }
 
         let ind_moved = get_index(color_that_played_move, mov.piece_moved);
 
-        if mov.promotion != PieceType::Null{
+        if mov.promotion != PieceType::Null {
             let ind_prom = get_index(color_that_played_move, mov.promotion);
             self.zobrist.hash ^= self.zobrist.table[mov.end_square as usize][ind_prom];
         }

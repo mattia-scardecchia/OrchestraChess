@@ -19,7 +19,6 @@ pub fn read_i8(file: &mut File) -> i8 {
     i8::from_le_bytes(buffer)
 }
 
-
 const SIMD_SIZE: usize = 8;
 
 pub fn get_padded(dims: usize) -> usize {

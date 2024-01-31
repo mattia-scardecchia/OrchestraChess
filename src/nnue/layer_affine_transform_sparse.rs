@@ -1,6 +1,6 @@
-use std::fs::File;
-use crate::nnue::feature_transformer::{TRANSFORMED_FEATURE_DIMENSIONS};
+use crate::nnue::feature_transformer::TRANSFORMED_FEATURE_DIMENSIONS;
 use crate::nnue::read_utilities::{get_padded, read_i32, read_i8};
+use std::fs::File;
 
 type BiasType = i32;
 type InputType = i8;
@@ -14,9 +14,12 @@ pub struct TransformSparse {
     weights: Vec<Vec<WeightType>>,
 }
 
-
 impl TransformSparse {
-    pub(crate) fn read_parameters(file: &mut File, out_dims: usize, in_dims: usize) -> TransformSparse {
+    pub(crate) fn read_parameters(
+        file: &mut File,
+        out_dims: usize,
+        in_dims: usize,
+    ) -> TransformSparse {
         let mut biases = Vec::new();
         for _i in 0..out_dims {
             biases.push(read_i32(file));
@@ -63,7 +66,6 @@ impl TransformSparse {
                     output[j] += w[j * PaddedInputDimensions] * in;
             }
              */
-
 
         let mut output = self.biases.clone();
 

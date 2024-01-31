@@ -1,11 +1,10 @@
 use crate::board::Board;
-use crate::muve::{Move, null_move};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use crate::book::OpeningBook;
+use crate::muve::{null_move, Move};
 use crate::timer::start_timer_maximum_allocable;
 use std::cmp::{max, min};
-
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 pub const MATING_SCORE: i32 = 250000;
 const BOOK_DEPTH: u64 = 20;
@@ -43,7 +42,6 @@ pub fn new_engine(board: Board, use_book: bool) -> Engine {
     }
 }
 
-
 impl Engine {
     pub fn search(&mut self, depth: i32, max_time: u128) -> (i32, Move) {
         if self.position_loaded == "startpos" {
@@ -78,19 +76,20 @@ impl Engine {
         self.node_count = 0;
         self.max_selective = 0;
 
-        println!("max time {}", max_time);
+        // println!("max time {}", max_time);
 
         for dep in 1..(depth + 1) {
             self.curr_max_depth = dep;
             let dep = dep as u64;
-            let pv_result = self.principal_variation(dep, -MATING_SCORE, MATING_SCORE, &stop_hook, true, true);
+            let pv_result =
+                self.principal_variation(dep, -MATING_SCORE, MATING_SCORE, &stop_hook, true, true);
 
             if *stop_hook.lock().unwrap() {
                 if pv_result.1 == null_move() {
-                    println!("Wasted iterative");
+                    // println!("Wasted iterative");
                     break;
                 } else {
-                    println!("Used iterative");
+                    // println!("Used iterative");
                     best_move = pv_result.1;
                     score = pv_result.0;
                     break;
@@ -104,18 +103,26 @@ impl Engine {
                 score_string = format!("mate {}", (MATING_SCORE - score + 3) / 2);
                 // score_string = format!("mate {}", score);
             } else if score < -MATING_SCORE + 100 {
-                score_string = format!("mate {}", - (score + MATING_SCORE + 2) / 2);
+                score_string = format!("mate {}", -(score + MATING_SCORE + 2) / 2);
             } else {
                 score_string = format!("cp {}", score);
             }
-            println!("info depth {} seldepth {} score {} nodes {} pv {}", dep, self.max_selective, score_string, self.node_count, best_move.to_uci_string());
+            println!(
+                "info depth {} seldepth {} score {} nodes {} pv {}",
+                dep,
+                self.max_selective,
+                score_string,
+                self.node_count,
+                best_move.to_uci_string()
+            );
             // println!("Transposition table size {}", self.transposition_table.len());
 
             // logic to check whether to stop the search
             let elapsed = start_time.elapsed().as_millis();
 
-            if max_time != 0 && elapsed as f32 > max_time as f32 * TIME_ELAPSED_ITERATIVE_DEEPENING {
-                println!("Stopped iterative deepening early because previous iteration already long enough");
+            if max_time != 0 && elapsed as f32 > max_time as f32 * TIME_ELAPSED_ITERATIVE_DEEPENING
+            {
+                // println!("Stopped iterative deepening early because previous iteration already long enough");
                 *stop_hook.lock().unwrap() = true;
                 break;
             }
@@ -125,8 +132,15 @@ impl Engine {
         return (score, best_move);
     }
 
-
-    fn principal_variation(&mut self, depth: u64, alpha: i32, beta: i32, stop_search: &Arc<Mutex<bool>>, genuine: bool, is_root: bool) -> (i32, Move) {
+    fn principal_variation(
+        &mut self,
+        depth: u64,
+        alpha: i32,
+        beta: i32,
+        stop_search: &Arc<Mutex<bool>>,
+        genuine: bool,
+        is_root: bool,
+    ) -> (i32, Move) {
         if *stop_search.lock().unwrap() {
             return (0, null_move());
         }
@@ -152,13 +166,11 @@ impl Engine {
             old_move = result.2;
             let old_exact = result.3;
 
-            if old_depth >= depth {                
+            if old_depth >= depth {
                 if old_exact || old_score >= beta {
-
                     let mut is_3_fold = false;
-                    
+
                     if !(old_move.is_en_passant || old_move.is_castling) {
-                        
                         // dirty
                         let old_hash = self.board.zobrist.hash;
                         self.board.update_hash(old_move);
@@ -168,8 +180,15 @@ impl Engine {
                         let stack_size = self.board.zobrist_stack.len();
                         let moves_to_see = min(stack_size, self.board.rule50 as usize);
                         if moves_to_see > 1 {
-                            let start = (stack_size - moves_to_see) + (stack_size - moves_to_see) % 2;
-                            if self.board.zobrist_stack[start..].iter().step_by(2).filter(|x| **x == new_hash).count() >= 2 {
+                            let start =
+                                (stack_size - moves_to_see) + (stack_size - moves_to_see) % 2;
+                            if self.board.zobrist_stack[start..]
+                                .iter()
+                                .step_by(2)
+                                .filter(|x| **x == new_hash)
+                                .count()
+                                >= 2
+                            {
                                 is_3_fold = true;
                             }
                         }
@@ -187,7 +206,6 @@ impl Engine {
             retrieved_hash = false;
         }
 
-
         if depth == 0 {
             let eval = self.quiescence_search(-MATING_SCORE, MATING_SCORE, 0);
             return (eval, null_move());
@@ -202,7 +220,6 @@ impl Engine {
                 return (0, null_move());
             }
         }
-
 
         let mut best_move = null_move();
         let mut best_score = -MATING_SCORE;
@@ -223,15 +240,20 @@ impl Engine {
             let mut score;
 
             if has_first_not_been_completed {
-                score = -self.principal_variation(depth - 1, -beta, -alpha, &stop_search, genuine, false).0;
+                score = -self
+                    .principal_variation(depth - 1, -beta, -alpha, &stop_search, genuine, false)
+                    .0;
                 best_move = mov;
             } else {
-                score = -self.principal_variation(depth - 1, -alpha - 1, -alpha, &stop_search, false, false).0;
+                score = -self
+                    .principal_variation(depth - 1, -alpha - 1, -alpha, &stop_search, false, false)
+                    .0;
                 if alpha < score && score < beta {
-                    score = -self.principal_variation(depth - 1, -beta, -alpha, &stop_search, genuine, false).0;
+                    score = -self
+                        .principal_variation(depth - 1, -beta, -alpha, &stop_search, genuine, false)
+                        .0;
                 }
             }
-
 
             self.board.unmake_move();
 
@@ -272,7 +294,6 @@ impl Engine {
         (best_score, best_move)
     }
 
-
     pub(crate) fn quiescence_search(&mut self, mut alpha: i32, beta: i32, depth: i32) -> i32 {
         self.max_selective = max(self.max_selective, depth);
 
@@ -299,7 +320,6 @@ impl Engine {
         if eval > alpha {
             alpha = eval;
         }
-
 
         // we are ignoring stalemates in quiescence search for performance
         // } else {
@@ -328,7 +348,6 @@ impl Engine {
         alpha
     }
 
-
     #[allow(dead_code)]
     pub fn benchmark_perf(&mut self, depth: u32) {
         let now = std::time::Instant::now();
@@ -336,10 +355,12 @@ impl Engine {
         let elapsed = now.elapsed();
         let elapsed_ms = elapsed.as_millis();
         println!("{} nodes in {} ms", res, elapsed_ms);
-        println!("{} Mps", res as f64 / (elapsed_ms as f64 / 1000.0) / 1000_000.0);
+        println!(
+            "{} Mps",
+            res as f64 / (elapsed_ms as f64 / 1000.0) / 1000_000.0
+        );
     }
 }
-
 
 impl Engine {
     fn update_transposition_table(&mut self, depth: u64, score: i32, mov: Move, is_exact: bool) {
@@ -352,6 +373,7 @@ impl Engine {
             }
         }
 
-        self.transposition_table.insert(hash, (depth, score, mov, is_exact));
+        self.transposition_table
+            .insert(hash, (depth, score, mov, is_exact));
     }
 }

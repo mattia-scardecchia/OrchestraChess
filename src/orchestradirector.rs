@@ -6,16 +6,15 @@ macro_rules! debug {
     };
 }
 
+use crate::board::Board;
+use crate::engine::{new_engine, Engine};
 use crate::timer::Timer;
 use crate::utils::split_fen_moves;
-use crate::board::Board;
 use crate::utils::COLOR::{BLACK, WHITE};
-use crate::engine::{new_engine, Engine};
 
 pub struct OrchestraDirector {
     pub eng: Engine,
     timer: Timer,
-
 }
 
 pub fn new_orchestra_director(use_book: bool) -> OrchestraDirector {
@@ -57,7 +56,8 @@ impl OrchestraDirector {
     fn uci_handle_position(&mut self, options: &str) {
         // todo: we re-initialize everything here, so we have a 400ms overhead for magics + nnue after the position command
         // find a way to re-use the nnue (especially) and magics
-        if options.starts_with("startpos") { // todo: review this because the string editing is done in two different places
+        if options.starts_with("startpos") {
+            // todo: review this because the string editing is done in two different places
             self.init_startpos();
             let w = options.split("moves").collect::<Vec<_>>();
             if w.len() > 1 {
@@ -91,7 +91,7 @@ impl OrchestraDirector {
     }
 
     fn uci_handle_go(&mut self, options: &str) {
-        println!("{}", options);
+        // println!("{}", options);
 
         let op_list: Vec<&str> = options.split_whitespace().collect();
         let mut i = 0;
@@ -128,8 +128,7 @@ impl OrchestraDirector {
                     depth = op_list[i + 1].parse().unwrap();
                     i += 2;
                 }
-                "nodes"
-                => {
+                "nodes" => {
                     i += 2;
                 }
                 "infinite" => {
@@ -140,7 +139,7 @@ impl OrchestraDirector {
                     i += 2;
                 }
                 _ => {
-                    i += 1;
+                    i += 1; // ignore unknown options for now
                 }
             }
         }
@@ -150,16 +149,15 @@ impl OrchestraDirector {
         let max_time_think;
         if depth == -1 {
             depth = 30;
-            max_time_think = self.timer.max_allocable().as_millis();
+            max_time_think = self.timer.max_allocable().as_millis(); // no depth specified -> use allocated time
         } else {
-            max_time_think = 0;
+            max_time_think = 0; // setting depth overrides movetime
         }
 
         let res = self.eng.search(depth, max_time_think);
 
         let mov = res.1;
         let _score = res.0;
-
 
         println!("bestmove {}", mov.to_uci_string());
     }

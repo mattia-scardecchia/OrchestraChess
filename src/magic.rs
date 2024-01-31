@@ -1,7 +1,7 @@
-use std::ops::{Index, IndexMut};
-use crate::utils::COLOR;
 use crate::utils::pop_count;
-use bitintr::{Pext, Pdep};
+use crate::utils::COLOR;
+use bitintr::{Pdep, Pext};
+use std::ops::{Index, IndexMut};
 
 pub const fn coord_to_int(rank: u8, file: u8) -> u8 {
     rank * 8 + file
@@ -11,16 +11,13 @@ pub const fn coord_bit(x: u8, y: u8) -> u64 {
     square_num_to_bitboard(coord_to_int(x, y))
 }
 
-
 pub const fn square_num_to_bitboard(square: u8) -> u64 {
     1 << square
 }
 
-
 pub fn int_to_coord(square: u8) -> (u8, u8) {
     (square / 8, square % 8)
 }
-
 
 fn signed_valid_coord(rank: i32, file: i32) -> bool {
     file >= 0 && file < 8 && rank >= 0 && rank < 8
@@ -34,11 +31,9 @@ pub fn hash_on_mask(key: u64, mask: u64) -> u64 {
     key.pext(mask)
 }
 
-
 pub fn inverse_hash_on_mask(result: u64, mask: u64) -> u64 {
     result.pdep(mask)
 }
-
 
 fn new_direction_magic() -> DirectionMagic {
     DirectionMagic {
@@ -174,20 +169,148 @@ fn new_direction_mask() -> DirectionMasks {
     }
 }
 
-
 // todo: define a macro for this (it exists for rust 2021 but not for 2018)
 fn array_vec() -> [Vec<u64>; 64] {
     // initialize empty array of vecs
-    let arr: [Vec<u64>; 64] = [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![], ];
+    let arr: [Vec<u64>; 64] = [
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+    ];
     arr
 }
 
 fn array_vec_dm() -> [DirectionMagic; 64] {
     // initialize empty array of new_direction_magic
-    let arr: [DirectionMagic; 64] = [new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic(), new_direction_magic()];
+    let arr: [DirectionMagic; 64] = [
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+        new_direction_magic(),
+    ];
     arr
 }
-
 
 pub fn new_magic() -> Magics {
     let mut mag = Magics {
@@ -231,28 +354,23 @@ pub const DIAGONAL_DIRS: [DIRECTIONS; 4] = [
     DIRECTIONS::SW,
 ];
 
-pub const STRAIGHT_DIRS: [DIRECTIONS; 4] = [
-    DIRECTIONS::N,
-    DIRECTIONS::E,
-    DIRECTIONS::S,
-    DIRECTIONS::W,
-];
+pub const STRAIGHT_DIRS: [DIRECTIONS; 4] =
+    [DIRECTIONS::N, DIRECTIONS::E, DIRECTIONS::S, DIRECTIONS::W];
 
 impl DIRECTIONS {
     fn to_pair(&self) -> (i32, i32) {
         match self {
-            DIRECTIONS::N => { (1, 0) }
-            DIRECTIONS::E => { (0, 1) }
-            DIRECTIONS::S => { (-1, 0) }
-            DIRECTIONS::W => { (0, -1) }
-            DIRECTIONS::NE => { (1, 1) }
-            DIRECTIONS::SE => { (-1, 1) }
-            DIRECTIONS::SW => { (-1, -1) }
-            DIRECTIONS::NW => { (1, -1) }
+            DIRECTIONS::N => (1, 0),
+            DIRECTIONS::E => (0, 1),
+            DIRECTIONS::S => (-1, 0),
+            DIRECTIONS::W => (0, -1),
+            DIRECTIONS::NE => (1, 1),
+            DIRECTIONS::SE => (-1, 1),
+            DIRECTIONS::SW => (-1, -1),
+            DIRECTIONS::NW => (1, -1),
         }
     }
 }
-
 
 impl Magics {
     pub fn init(&mut self) {
@@ -266,9 +384,7 @@ impl Magics {
         // println!("{:064b}", self.pawn_captures_white[12]);
         // println!("{:064b}", self.pawn_captures_black[12]);
 
-
         self.init_rook(); // looks good
-
 
         self.init_bishop(); // looks good
 
@@ -282,17 +398,22 @@ impl Magics {
         // print!("8  ");
         // usef(self.bishop_magic[2][8 as usize]);
 
-
         self.init_directions(); // looks good
     }
 
     fn init_king(&mut self) {
         const KING_PATTERNS: [(i32, i32); 8] = [
-            (1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)
+            (1, 1),
+            (1, 0),
+            (1, -1),
+            (0, 1),
+            (0, -1),
+            (-1, 1),
+            (-1, 0),
+            (-1, -1),
         ];
 
-        for starting_square in 0..64
-        {
+        for starting_square in 0..64 {
             let (rank, file) = int_to_coord(starting_square);
             for (a, b) in KING_PATTERNS.iter() {
                 let a = *a;
@@ -308,11 +429,17 @@ impl Magics {
 
     fn init_knight(&mut self) {
         const KNIGHT_PATTERNS: [(i32, i32); 8] = [
-            (2, 1), (1, 2), (2, -1), (-1, 2), (-2, 1), (1, -2), (-1, -2), (-2, -1)
+            (2, 1),
+            (1, 2),
+            (2, -1),
+            (-1, 2),
+            (-2, 1),
+            (1, -2),
+            (-1, -2),
+            (-2, -1),
         ];
 
-        for starting_square in 0..64
-        {
+        for starting_square in 0..64 {
             let (rank, file) = int_to_coord(starting_square);
             for (a, b) in KNIGHT_PATTERNS.iter() {
                 let a = *a;
@@ -386,7 +513,6 @@ impl Magics {
     }
 
     fn init_masks(&mut self) {
-
         // output looks good
 
         self.init_direction_masks();
@@ -395,15 +521,27 @@ impl Magics {
     }
     fn init_rook_masks(&mut self) {
         for ss in 0..64 {
-            self.rook_full_masks[ss] = self.direction_full_masks[DIRECTIONS::N][ss] | self.direction_full_masks[DIRECTIONS::E][ss] | self.direction_full_masks[DIRECTIONS::S][ss] | self.direction_full_masks[DIRECTIONS::W][ss];
-            self.rook_partial_masks[ss] = self.direction_partial_masks[DIRECTIONS::N][ss] | self.direction_partial_masks[DIRECTIONS::E][ss] | self.direction_partial_masks[DIRECTIONS::S][ss] | self.direction_partial_masks[DIRECTIONS::W][ss];
+            self.rook_full_masks[ss] = self.direction_full_masks[DIRECTIONS::N][ss]
+                | self.direction_full_masks[DIRECTIONS::E][ss]
+                | self.direction_full_masks[DIRECTIONS::S][ss]
+                | self.direction_full_masks[DIRECTIONS::W][ss];
+            self.rook_partial_masks[ss] = self.direction_partial_masks[DIRECTIONS::N][ss]
+                | self.direction_partial_masks[DIRECTIONS::E][ss]
+                | self.direction_partial_masks[DIRECTIONS::S][ss]
+                | self.direction_partial_masks[DIRECTIONS::W][ss];
         }
     }
 
     fn init_bishop_masks(&mut self) {
         for ss in 0..64 {
-            self.bishop_full_masks[ss] = self.direction_full_masks[DIRECTIONS::NE][ss] | self.direction_full_masks[DIRECTIONS::NW][ss] | self.direction_full_masks[DIRECTIONS::SE][ss] | self.direction_full_masks[DIRECTIONS::SW][ss];
-            self.bishop_partial_masks[ss] = self.direction_partial_masks[DIRECTIONS::NE][ss] | self.direction_partial_masks[DIRECTIONS::NW][ss] | self.direction_partial_masks[DIRECTIONS::SE][ss] | self.direction_partial_masks[DIRECTIONS::SW][ss];
+            self.bishop_full_masks[ss] = self.direction_full_masks[DIRECTIONS::NE][ss]
+                | self.direction_full_masks[DIRECTIONS::NW][ss]
+                | self.direction_full_masks[DIRECTIONS::SE][ss]
+                | self.direction_full_masks[DIRECTIONS::SW][ss];
+            self.bishop_partial_masks[ss] = self.direction_partial_masks[DIRECTIONS::NE][ss]
+                | self.direction_partial_masks[DIRECTIONS::NW][ss]
+                | self.direction_partial_masks[DIRECTIONS::SE][ss]
+                | self.direction_partial_masks[DIRECTIONS::SW][ss];
         }
     }
 

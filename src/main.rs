@@ -1,33 +1,33 @@
-mod muve;
+mod accumulator;
 mod board;
-mod utils;
-mod magic;
-mod orchestradirector;
+mod book;
 mod engine;
 mod evaluation;
-mod zobrist;
-mod timer;
-mod tests;
-mod book;
+mod magic;
 mod move_manager;
+mod muve;
 mod nnue;
-mod accumulator;
+mod orchestradirector;
+mod tests;
+mod timer;
+mod utils;
+mod zobrist;
 
-use std::io;
 use std::env;
-
+use std::io;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let use_book = args.len() > 1 && args[1] == "use-book";
     let mut orchestra_director = orchestradirector::new_orchestra_director(use_book);
 
-
     loop {
         let mut message = String::new();
 
         // Read input from the user
-        io::stdin().read_line(&mut message).expect("Failed to read input");
+        io::stdin()
+            .read_line(&mut message)
+            .expect("Failed to read input");
 
         let message = message.trim(); // Remove trailing newline
 

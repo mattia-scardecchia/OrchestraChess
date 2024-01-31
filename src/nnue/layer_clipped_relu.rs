@@ -18,10 +18,13 @@ impl ClippedRelu {
             output[i] = static_cast<OutputType>(std::clamp(input[i] >> WeightScaleBits, 0, 127));
         }*/
         // clamp vector
-        input.into_iter().map(|value| {
-            let scaled_value = value >> WEIGHT_SCALE_BITS;
-            let resc = scaled_value.clamp(0, 127);
-            resc as OutputType
-        }).collect()
+        input
+            .into_iter()
+            .map(|value| {
+                let scaled_value = value >> WEIGHT_SCALE_BITS;
+                let resc = scaled_value.clamp(0, 127);
+                resc as OutputType
+            })
+            .collect()
     }
 }

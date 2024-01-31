@@ -2,7 +2,6 @@ pub fn respond_to_uci(message: &str) {
     println!("{}", message);
 }
 
-
 pub fn split_fen_moves(s: &str) -> (String, String) {
     if !s.contains("moves") {
         return (s.replace("fen ", ""), String::from(""));
@@ -69,7 +68,6 @@ pub fn square_string_to_int(s: &str) -> u8 {
 //     63 - x.leading_zeros() as u8
 // }
 
-
 // pub fn get_msb_masked(x: u64) -> u64 {
 //     1 << get_msb_index(x)
 // }
@@ -90,7 +88,6 @@ pub enum PieceType {
     King = 6,
 }
 
-
 impl PieceType {
     pub(crate) fn to_uci_string(&self) -> &str {
         match self {
@@ -105,7 +102,12 @@ impl PieceType {
     }
 }
 
-pub const MOVING_PIECES: [PieceType; 4] = [PieceType::Queen, PieceType::Knight, PieceType::Rook, PieceType::Bishop];
+pub const MOVING_PIECES: [PieceType; 4] = [
+    PieceType::Queen,
+    PieceType::Knight,
+    PieceType::Rook,
+    PieceType::Bishop,
+];
 
 impl COLOR {
     pub(crate) fn flip(&self) -> COLOR {
@@ -116,7 +118,8 @@ impl COLOR {
     }
 }
 
-pub const MASK_ONES: u64 = 0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111;
+pub const MASK_ONES: u64 =
+    0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111;
 
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq)]
