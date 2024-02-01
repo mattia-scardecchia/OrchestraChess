@@ -115,6 +115,16 @@ class Handler:
                          pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE,
                                      self.SQUARE_SIZE))
 
+    def highlight_last_move(self):
+        if not self.move_stack.is_empty():
+            last_move = self.move_stack.peek()
+            self.color_square(last_move.from_row, last_move.from_col, YELLOW)
+            self.color_square(last_move.to_row, last_move.to_col, YELLOW)
+
+    def highlight_selected_piece(self):
+        if self.input_buffer.piece is not None:
+            self.color_square(self.input_buffer.row, self.input_buffer.col, RED)
+
     def draw_board(self):
         """
         Draw the board.
@@ -124,12 +134,8 @@ class Handler:
             for col in range(self.COLS):
                 if (row + col) % 2 == 0:
                     self.color_square(row, col, WHITE)
-        if not self.move_stack.is_empty():
-            last_move = self.move_stack.peek()
-            self.color_square(last_move.from_row, last_move.from_col, YELLOW)
-            self.color_square(last_move.to_row, last_move.to_col, YELLOW)
-        if self.input_buffer.piece is not None:
-            self.color_square(self.input_buffer.row, self.input_buffer.col, RED)
+        self.highlight_last_move()
+        self.highlight_selected_piece()
         for row in range(self.ROWS):
             for col in range(self.COLS):
                 piece = self.board[row][col]
@@ -158,7 +164,6 @@ class Handler:
         """
         pos = pygame.mouse.get_pos()
         row, col = 7 - (pos[1] // self.SQUARE_SIZE), pos[0] // self.SQUARE_SIZE
-        print(row, col)
         if self.input_buffer.piece is None:
             if self.board[row][col] is not None:
                 self.input_buffer.piece = self.board[row][col]
