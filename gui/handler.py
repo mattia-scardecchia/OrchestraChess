@@ -202,7 +202,7 @@ class Handler:
                 self.input_buffer.col = col
             return
         move = Move(self.input_buffer.row, self.input_buffer.col, row, col)
-        piece, colour = self.input_buffer.piece.split('-')
+        colour, piece = self.input_buffer.piece.split('-')
         if piece == 'pawn' and row in [0, 7]:
             move.promoted_piece = f'{colour}-queen'
         if not self.is_legal_move(move):
