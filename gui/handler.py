@@ -2,6 +2,8 @@ import pygame
 import subprocess
 import sys
 import os
+import platform
+import pathlib
 import time
 from helpers import Stack, Colour, Move, InputBuffer
 
@@ -22,9 +24,10 @@ class Handler:
 
     def __init__(self, verbose=0, engine_path=None, engine_directory=None, movetime=1000, engine_color=Colour.BLACK,
                  fen=None):
-        root_path = '/'.join(os.getcwd().split('/')[:-1])
+        root_path = pathlib.Path(__file__).parent.parent.absolute()
+        extension = '.exe' if platform.system() == 'Windows' else ''
         if engine_path is None:
-            engine_path = root_path + "/target/release/rust-chess-bot"
+            engine_path = root_path / "target" / "release" / f"rust-chess-bot{extension}"
         if engine_directory is None:
             engine_directory = root_path
         assert os.path.exists(engine_path), f"Engine path {engine_path} does not exist."
