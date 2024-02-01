@@ -20,7 +20,8 @@ class Handler:
     Handler class for the GUI.
     """
 
-    def __init__(self, verbose=0, engine_path=None, engine_directory=None, movetime=1000, engine_color=Colour.BLACK):
+    def __init__(self, verbose=0, engine_path=None, engine_directory=None, movetime=1000, engine_color=Colour.BLACK,
+                 fen=None):
         root_path = '/'.join(os.getcwd().split('/')[:-1])
         if engine_path is None:
             engine_path = root_path + "/target/release/rust-chess-bot"
@@ -33,6 +34,9 @@ class Handler:
         self.verbose = verbose
 
         self.engine_colour = engine_color
+
+        self.staring_fen = fen
+
         pygame.init()
         self.WIDTH, self.HEIGHT = 800, 800
         self.ROWS, self.COLS = 8, 8
@@ -44,7 +48,11 @@ class Handler:
         self.engine = None
         self.input_buffer = InputBuffer()
         self.move_stack = Stack()
-        self.colour_to_move = Colour.WHITE
+        if fen == "startpos":
+            self.colour_to_move = Colour.WHITE
+        else:
+            self.colour_to_move = Colour.WHITE if "w" in fen else Colour.BLACK
+
         self.base_freq = 0.1
         self.movetime = movetime
 
@@ -80,21 +88,44 @@ class Handler:
                     (self.SQUARE_SIZE, self.SQUARE_SIZE))
         return images
 
-    @staticmethod
-    def initial_board_state():
+    def initial_board_state(self):
         """
         Initialize the board state for a new game.
         """
         board = [[None for _ in range(8)] for _ in range(8)]
         pieces = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]
+
+        char_to_piece = {
+            'r': 'rook',
+            'n': 'knight',
+            'b': 'bishop',
+            'q': 'queen',
+            'k': 'king',
+            'p': 'pawn'
+        }
+
         colors = ["white", "black"]
-        for i, piece in enumerate(pieces):
-            board[0][i] = f"{colors[0]}-{piece}"
-            board[7][i] = f"{colors[1]}-{piece}"
-        for i in range(8):
-            board[1][i] = f"{colors[0]}-pawn"
-            board[6][i] = f"{colors[1]}-pawn"
-        return board
+        if self.staring_fen == "startpos":
+            for i, piece in enumerate(pieces):
+                board[0][i] = f"{colors[0]}-{piece}"
+                board[7][i] = f"{colors[1]}-{piece}"
+            for i in range(8):
+                board[1][i] = f"{colors[0]}-pawn"
+                board[6][i] = f"{colors[1]}-pawn"
+            return board
+        else:
+            fen = self.staring_fen.split()
+            board_state = fen[0]
+            rows = board_state.split('/')
+            for i, row in enumerate(reversed(rows)):
+                col = 0
+                for char in row:
+                    if char.isdigit():
+                        col += int(char)
+                    else:
+                        board[i][col] = f"{colors[0] if char.isupper() else colors[1]}-{char_to_piece[char.lower()]}"
+                        col += 1
+            return board
     
     def color_square(self, row, col, color):
         """
@@ -285,6 +316,7 @@ class Handler:
         """
         position_command = self.construct_position_command()
         self.send_command(position_command)
+
         self.send_command('go movetime {}'.format(self.movetime))
         move_string = self.read_engine_move()
         engine_move = self.build_engine_move(move_string)
@@ -294,7 +326,12 @@ class Handler:
         """
         Construct the position command to send to the engine.
         """
-        position_command = 'position startpos moves'
+        if self.staring_fen == "startpos":
+            position_command = 'position startpos'
+        else:
+            position_command = f'position fen {self.staring_fen}'
+        position_command += ' moves'
+
         for move in self.move_stack.stack:
             position_command += (' ' + self.move_to_string(move))
         return position_command

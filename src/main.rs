@@ -20,7 +20,8 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let use_book = args.len() > 1 && args[1] == "use-book";
     let mut orchestra_director = orchestradirector::new_orchestra_director(use_book);
-
+    orchestra_director.handle_command("position", "fen rnb1kb1r/1pq2ppp/p2p1n2/4p3/4P3/2NQBN2/PPP2PPP/R3KB1R b KQkq - 3 8");
+    orchestra_director.handle_command("go", "depth 2");
     loop {
         let mut message = String::new();
 
