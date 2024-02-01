@@ -55,17 +55,17 @@ class Move:
 
 @dataclass
 class InputBuffer:
-    selected_piece: Optional[str] = None
-    selected_row: Optional[int] = None
-    selected_col: Optional[int] = None
+    piece: Optional[str] = None
+    row: Optional[int] = None
+    col: Optional[int] = None
     promoted_piece: Optional[str] = None
 
     def flush(self):
         """
         Flush the input buffer.
         """
-        self.selected_piece = None
-        self.selected_row = None
-        self.selected_col = None
+        self.piece = None
+        self.row = None
+        self.col = None
         self.promoted_piece = None
         

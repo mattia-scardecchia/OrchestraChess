@@ -7,7 +7,11 @@ from helpers import Stack, Colour, Move, InputBuffer
 
 
 # TODO: debug!
-# TODO: mark selected square
+
+
+WHITE = (255, 255, 255)
+GREEN = (118, 150, 86)
+RED = (255, 0, 0)
 
 
 class Handler:
@@ -32,8 +36,6 @@ class Handler:
         self.WIDTH, self.HEIGHT = 800, 800
         self.ROWS, self.COLS = 8, 8
         self.SQUARE_SIZE = self.WIDTH // self.COLS
-        self.WHITE = (255, 255, 255)
-        self.GREEN = (118, 150, 86)
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Chess")
         self.images = self.load_images()
@@ -92,23 +94,56 @@ class Handler:
             board[1][i] = f"{colors[0]}-pawn"
             board[6][i] = f"{colors[1]}-pawn"
         return board
+    
+    def color_square(self, row, col, color):
+        """
+        Color the square at (row, col) with the given color.
+        a1 is (0, 0), h8 is (7, 7).
+        """
+        row = 7 - row
+        pygame.draw.rect(self.screen, color, (
+            col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
+        
+    def draw_piece(self, row, col, piece):
+        """
+        Draw the piece at (row, col).
+        a1 is (0, 0), h8 is (7, 7).
+        """
+        row = 7 - row
+        self.screen.blit(self.images[piece],
+                         pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE,
+                                     self.SQUARE_SIZE))
 
     def draw_board(self):
         """
         Draw the board.
         """
-        self.screen.fill(self.GREEN)
+        self.screen.fill(GREEN)
         for row in range(self.ROWS):
             for col in range(self.COLS):
                 if (row + col) % 2 == 0:
-                    pygame.draw.rect(self.screen, self.WHITE, (
-                        col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
-                piece = self.board[7 - row][col]
+                    self.color_square(row, col, WHITE)
+        if self.input_buffer.piece is not None:
+            self.color_square(self.input_buffer.row, self.input_buffer.col, RED)
+        for row in range(self.ROWS):
+            for col in range(self.COLS):
+                piece = self.board[row][col]
                 if piece:
-                    self.screen.blit(self.images[piece],
-                                     pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE,
-                                                 self.SQUARE_SIZE))
+                    self.draw_piece(row, col, piece)
         pygame.display.update()
+
+
+        # self.screen.fill(GREEN)
+        # for row in range(self.ROWS):
+        #     for col in range(self.COLS):
+        #         if (row + col) % 2 == 0:
+        #             pygame.draw.rect(self.screen, WHITE, (col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
+        #         piece = self.board[7 - row][col]
+        #         if piece:
+        #             self.screen.blit(self.images[piece],
+        #                              pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE,
+        #                                          self.SQUARE_SIZE))
+        # pygame.display.update()
 
     def handle_event(self, event):
         """
@@ -121,6 +156,7 @@ class Handler:
                 self.handle_click()
             case _:
                 pass
+        self.draw_board()
 
     def handle_click(self):
         """
@@ -130,14 +166,15 @@ class Handler:
         """
         pos = pygame.mouse.get_pos()
         row, col = 7 - (pos[1] // self.SQUARE_SIZE), pos[0] // self.SQUARE_SIZE
-        if self.input_buffer.selected_piece is None:
+        print(row, col)
+        if self.input_buffer.piece is None:
             if self.board[row][col] is not None:
-                self.input_buffer.selected_piece = self.board[row][col]
-                self.input_buffer.selected_row = row
-                self.input_buffer.selected_col = col
+                self.input_buffer.piece = self.board[row][col]
+                self.input_buffer.row = row
+                self.input_buffer.col = col
             return
-        move = Move(self.input_buffer.selected_row, self.input_buffer.selected_col, row, col)
-        piece, colour = self.input_buffer.selected_piece.split('-')
+        move = Move(self.input_buffer.row, self.input_buffer.col, row, col)
+        piece, colour = self.input_buffer.piece.split('-')
         if piece == 'pawn' and row in [0, 7]:
             move.promoted_piece = f'{colour}-queen'
         if not self.is_legal_move(move):
@@ -145,7 +182,6 @@ class Handler:
             return
         move.move_type = self.deduce_move_type(move.from_row, move.from_col, move.to_row, move.to_col)
         self.make_move(move)
-        self.input_buffer.flush()
         self.check_game_status()
         self.make_engine_move()
         self.check_game_status()
@@ -357,6 +393,7 @@ class Handler:
                 self.board[move.from_row][move.to_col] = None
         self.colour_to_move = self.colour_to_move.flipped()
         self.move_stack.push(move)
+        self.input_buffer.flush()
         self.draw_board()
 
     def run(self):
