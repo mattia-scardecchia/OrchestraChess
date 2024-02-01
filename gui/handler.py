@@ -59,6 +59,7 @@ class Handler:
         """
         Quit the GUI.
         """
+        self.engine.kill()
         pygame.quit()
         sys.exit()
 
@@ -101,7 +102,7 @@ class Handler:
             for col in range(self.COLS):
                 if (row + col) % 2 == 0:
                     pygame.draw.rect(self.screen, self.WHITE, (
-                    col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
+                        col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
                 piece = self.board[7 - row][col]
                 if piece:
                     self.screen.blit(self.images[piece],
