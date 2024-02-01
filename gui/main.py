@@ -3,10 +3,10 @@ from handler import Handler
 from helpers import Colour
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--verbose', type=int, choices=[0, 1], default=0, help='Set verbosity of logs (0 or 1)')
-parser.add_argument("--movetime", type=int, default=1000, help="Set movetime in ms (default 1000)")
-parser.add_argument("--colour", type=str, choices=["w", "b"], default="w", help="choose your colour (w/b)")
-parser.add_argument("--fen", type=str, default="startpos", help="Start from a given FEN (default is starting position)")
+parser.add_argument("--colour", type=str, choices=["w", "b"], default="w", help="choose your colour (default white)")
+parser.add_argument("--fen", type=str, default="startpos", help="pass fen string to start from a specific position (default startpos)")
+parser.add_argument("--movetime", type=int, default=1000, help="set time the engine spends on each move, in milliseconds (default 1000)")
+parser.add_argument('--verbose', type=int, choices=[0, 1], default=0, help="Set verbosity of logs (default 0)")
 
 args = parser.parse_args()
 verbose = args.verbose

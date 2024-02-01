@@ -10,25 +10,37 @@ You can interact with the engine from the terminal, through the [UCI protocol](h
 
 ### Build
 
-To install and build the project, fire up a terminal and run:
+To install and build the project, make sure to have [Rust](https://www.rust-lang.org/it) installed on your computer. Then fire up a terminal and run:
 
 ```
 git clone https://github.com/MattiaSC01/ChessBot.git
 cd ChessBot
-dvc pull
 cargo build --release
+```
+
+You will need to download two files containing the nnue weights and the opening book. If you have [dvc](https://dvc.org) installed, you can simply `dvc pull` and dvc will handle everything for you. Otherwise, download the following two files manually; place the first in the `nnue_weights` folder and the second in the `openings` folder.
+
+```
+https://drive.google.com/file/d/1mvWKCEFNILHad3hKTbtzRZdo2uCsEqg3/view?usp=share_link
+https://drive.google.com/file/d/1xBPPElyjGOo0NHvT5NwZO5oQXmD3WW2Z/view?usp=share_link
 ```
 
 ### GUI
 
-To play against the engine in the GUI, from the project root directory, run:
+To play against the engine in the GUI, install python dependencies:
 
 ```
 cd gui
-python main.py --verbose <verbose>
+pip install -r requirements.txt
 ```
 
-If you pass `--verbose 1`, the GUI handler will log queries and replies of the engine. By default, it won't.
+Then, from the `gui` directory run
+
+```
+python main.py
+```
+
+Use `python main.py --help` for a list of configurable options.
 
 ### UCI Protocol
 
