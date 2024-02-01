@@ -1274,7 +1274,7 @@ impl Board {
     pub(crate) fn is_3fold(&self) -> bool {
         let hash = self.zobrist.hash;
         let stack_size = self.zobrist_stack.len();
-        let moves_to_see = min(stack_size, self.rule50 as usize);
+        let moves_to_see = min(stack_size - 1, self.rule50 as usize);
         if moves_to_see < 4 {
             return false;
         }
