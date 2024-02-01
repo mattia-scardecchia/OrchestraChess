@@ -15,10 +15,11 @@ class Handler:
     Handler class for the GUI.
     """
     def __init__(self, verbose=0, engine_path=None, engine_directory=None):
+        root_path = '/'.join(os.getcwd().split('/')[:-1])
         if engine_path is None:
-            engine_path = "/Users/mat/Desktop/Files/Code/Github Projects/Public/OrchestraChess/target/release/rust-chess-bot"
+            engine_path = root_path + "/target/release/rust-chess-bot"
         if engine_directory is None:
-            engine_directory = "/Users/mat/Desktop/Files/Code/Github Projects/Public/OrchestraChess"
+            engine_directory = root_path
         assert os.path.exists(engine_path), f"Engine path {engine_path} does not exist."
         assert os.path.exists(engine_directory), f"Engine directory {engine_directory} does not exist."
         self.engine_path = engine_path
