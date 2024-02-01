@@ -14,7 +14,8 @@ class Handler:
     """
     Handler class for the GUI.
     """
-    def __init__(self, verbose=0, engine_path=None, engine_directory=None):
+
+    def __init__(self, verbose=0, engine_path=None, engine_directory=None, movetime=1000, engine_color=Colour.BLACK):
         root_path = '/'.join(os.getcwd().split('/')[:-1])
         if engine_path is None:
             engine_path = root_path + "/target/release/rust-chess-bot"
@@ -26,7 +27,7 @@ class Handler:
         self.engine_directory = engine_directory
         self.verbose = verbose
 
-        self.engine_colour = self.get_engine_colour()
+        self.engine_colour = engine_color
         pygame.init()
         self.WIDTH, self.HEIGHT = 800, 800
         self.ROWS, self.COLS = 8, 8
@@ -42,7 +43,7 @@ class Handler:
         self.move_stack = Stack()
         self.colour_to_move = Colour.WHITE
         self.base_freq = 0.1
-        self.movetime = 1000
+        self.movetime = movetime
 
     def get_engine_colour(self):
         """
@@ -54,14 +55,13 @@ class Handler:
                 return Colour.WHITE if player_colour == "b" else Colour.BLACK
             print("Invalid input. Please enter 'w' or 'b'.")
 
-
     def quit(self):
         """
         Quit the GUI.
         """
         pygame.quit()
         sys.exit()
-    
+
     def load_images(self):
         """
         Load the images for the pieces.
@@ -71,7 +71,9 @@ class Handler:
         images = {}
         for piece in pieces:
             for color in colors:
-                images[f"{color}-{piece}"] = pygame.transform.scale(pygame.image.load(os.path.join("assets", f"{color}-{piece}.png")), (self.SQUARE_SIZE, self.SQUARE_SIZE))
+                images[f"{color}-{piece}"] = pygame.transform.scale(
+                    pygame.image.load(os.path.join("assets", f"{color}-{piece}.png")),
+                    (self.SQUARE_SIZE, self.SQUARE_SIZE))
         return images
 
     @staticmethod
@@ -98,10 +100,13 @@ class Handler:
         for row in range(self.ROWS):
             for col in range(self.COLS):
                 if (row + col) % 2 == 0:
-                    pygame.draw.rect(self.screen, self.WHITE, (col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
-                piece = self.board[7-row][col]
+                    pygame.draw.rect(self.screen, self.WHITE, (
+                    col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
+                piece = self.board[7 - row][col]
                 if piece:
-                    self.screen.blit(self.images[piece], pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
+                    self.screen.blit(self.images[piece],
+                                     pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE,
+                                                 self.SQUARE_SIZE))
         pygame.display.update()
 
     def handle_event(self, event):
@@ -143,7 +148,7 @@ class Handler:
         self.check_game_status()
         self.make_engine_move()
         self.check_game_status()
-    
+
     @staticmethod
     def move_to_string(move: Move):
         """
@@ -159,7 +164,7 @@ class Handler:
         if move.promoted_piece is not None:
             move_string += piece_initials[move.promoted_piece.split('-')[1]]
         return move_string
-    
+
     def is_legal_move(self, move: Move):
         """
         Make a call to the engine to check if the move is legal.
@@ -172,7 +177,7 @@ class Handler:
             if output in ['legal', 'illegal']:
                 return output == 'legal'
             time.sleep(self.base_freq)
-    
+
     def get_game_status(self):
         """
         Make a call to the engine to check if game is over.
@@ -185,7 +190,7 @@ class Handler:
             if output in ['checkmate', 'stalemate', 'game not over']:
                 return output
             time.sleep(self.base_freq)
-        
+
     def check_game_status(self):
         game_status = self.get_game_status()
         if game_status != "game not over":
@@ -199,10 +204,10 @@ class Handler:
         Start the engine.
         """
         self.engine = subprocess.Popen(
-            self.engine_path, 
-            stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE, 
-            universal_newlines=True, 
+            self.engine_path,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
             bufsize=1,
             cwd=self.engine_directory,
         )
@@ -250,7 +255,7 @@ class Handler:
         move_string = self.read_engine_move()
         engine_move = self.build_engine_move(move_string)
         self.make_move(engine_move)
-    
+
     def construct_position_command(self):
         """
         Construct the position command to send to the engine.
@@ -259,7 +264,7 @@ class Handler:
         for move in self.move_stack.stack:
             position_command += (' ' + self.move_to_string(move))
         return position_command
-        
+
     def read_engine_move(self):
         """
         Read the move from the engine's output.
@@ -270,7 +275,7 @@ class Handler:
                 _, move = output.split()
                 return move
             time.sleep(self.base_freq)
-    
+
     def build_engine_move(self, engine_move):
         """
         Engine move is in the form 'e2e4'.
@@ -312,7 +317,7 @@ class Handler:
         if self.board[to_row][to_col] is not None:
             return 'capture'
         return 'normal'
-        
+
     def make_move(self, move: Move):
         """
         Make a move on the board.
