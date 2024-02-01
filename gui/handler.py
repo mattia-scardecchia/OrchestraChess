@@ -12,6 +12,7 @@ from helpers import Stack, Colour, Move, InputBuffer
 WHITE = (255, 255, 255)
 GREEN = (118, 150, 86)
 RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
 
 
 class Handler:
@@ -123,6 +124,10 @@ class Handler:
             for col in range(self.COLS):
                 if (row + col) % 2 == 0:
                     self.color_square(row, col, WHITE)
+        if not self.move_stack.is_empty():
+            last_move = self.move_stack.peek()
+            self.color_square(last_move.from_row, last_move.from_col, YELLOW)
+            self.color_square(last_move.to_row, last_move.to_col, YELLOW)
         if self.input_buffer.piece is not None:
             self.color_square(self.input_buffer.row, self.input_buffer.col, RED)
         for row in range(self.ROWS):
@@ -131,19 +136,6 @@ class Handler:
                 if piece:
                     self.draw_piece(row, col, piece)
         pygame.display.update()
-
-
-        # self.screen.fill(GREEN)
-        # for row in range(self.ROWS):
-        #     for col in range(self.COLS):
-        #         if (row + col) % 2 == 0:
-        #             pygame.draw.rect(self.screen, WHITE, (col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE, self.SQUARE_SIZE))
-        #         piece = self.board[7 - row][col]
-        #         if piece:
-        #             self.screen.blit(self.images[piece],
-        #                              pygame.Rect(col * self.SQUARE_SIZE, row * self.SQUARE_SIZE, self.SQUARE_SIZE,
-        #                                          self.SQUARE_SIZE))
-        # pygame.display.update()
 
     def handle_event(self, event):
         """
