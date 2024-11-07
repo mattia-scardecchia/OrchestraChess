@@ -14,8 +14,8 @@ You can interact with the engine from the terminal, through the [UCI protocol](h
 To install and build the project, make sure to have [Rust](https://www.rust-lang.org/it) installed on your computer. Then fire up a terminal and run:
 
 ```
-git clone https://github.com/MattiaSC01/ChessBot.git
-cd ChessBot
+git clone https://github.com/mattia-scardecchia/OrchestraChess.git
+cd OrchestraChess
 cargo build --release
 ```
 
