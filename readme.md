@@ -1,9 +1,13 @@
 # Orchestra Chess
 
-Orchestra Chess is a chess engine written from scratch in Rust, that reached 2300+ Elo rating on Lichess in blitz (98th percentile of weekly active human players). It was developed by Mattia Scardecchia and Dario Filatrella in Fall 2023.
+Orchestra Chess is a chess engine written from scratch in Rust, that beats 98% of weekly active human players on lichess.org (reached 2300+ Elo rating on lichess.org). It was developed by Mattia Scardecchia and Dario Filatrella in Fall 2023.
+
+Submitted as a final project in Prof. Laurent Poirrier's Software Engineering course at Bocconi University. Instructor's feedback: "Very impressive work, not just in terms of scope, but also quality and results. Lots of interesting tricks. Because of its scope, this project will count for 45% of the final grade" (normally it's 20%).
 
 Lichess account of OrchestraChess: [here](https://lichess.org/@/OrchestraBot) \
 Development repository with commit history: [here](https://github.com/DarioFi/OrchestraChess)
+
+![](media/demo.gif)
 
 ## Usage
 
